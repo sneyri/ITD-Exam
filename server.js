@@ -26,22 +26,6 @@ const pool = new Pool(
           }
 );
 
-(async () => {
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS questions (
-                id SERIAL PRIMARY KEY,
-                question_text TEXT NOT NULL,
-                correct_answer TEXT NOT NULL,
-                points INTEGER DEFAULT 1
-            )
-        `);
-
-    } catch(error) {
-        console.error('Ошибка при создании таблицы:', error.message);
-    }
-})
-
 app.post('/api/questions', async (req, res) => {
     const { question_text, correct_answer, points } = req.body; 
 
