@@ -77,11 +77,14 @@ app.delete('/api/questions/:id', async (req, res) => {
 
 app.get('/api/questions/get', async (req, res) => {
     try {
+        console.log('1. Запрос получен');
         const result = await pool.query('SELECT * FROM questions');
-
+        console.log('2. Запрос выполнен, строк:', result.rows.length);
         res.status(200).json(result.rows);
     } catch(err) {
-        res.status(500).json({error: err.message});
+        console.error('3. Ошибка:', err.message);
+        console.error('4. Полная ошибка:', err);
+        res.status(500).json({error: err.message, details: err.toString()});
     }
 });
 
