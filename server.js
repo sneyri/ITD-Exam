@@ -62,16 +62,16 @@ app.get('/api/questions/get', async (req, res) => {
     }
 });
 
-app.get('/exam', (req, res) => {
-    res.sendFile(__dirname + '/public/exam.html');
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/home.html');
 });
 
-app.get('/exam/admin', (reg, res) => {
+app.get('/admin', (reg, res) => {
     res.sendFile(__dirname + '/public/admin.html');
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Сервер: http://localhost:${PORT}/exam`);
-    console.log(`Админка: http://localhost:${PORT}/exam/admin`);
+    console.log(`Сервер: http://localhost:${PORT}/`);
+    console.log(`Админка: http://localhost:${PORT}/admin`);
 });
