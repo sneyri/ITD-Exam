@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Админка | Добавить вопрос</title>
+</head>
+<body>
+    <h1>Добавить вопрос</h1>
+    <form id="questionForm">
+        <input type="text" id="question_text" placeholder="Текст вопроса" required>
+        <input type="text" id="correct_answer" placeholder="Правильный ответ" required>
+        <input type="number" id="points" placeholder="Кол-во баллов" required>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <h2>Существующие вопросы</h2>
+    <div id="questionList">Загрузка...</div>
+<script>
+    const form = document.getElementById('questionForm');
+
+    async function deleteQuestion(id) {
+        if(!confirm('Удалить вопрос?')) return;
+
+        try {
+            const response = await fetch(`/api/questions/${id}`, {
+                method: "DELETE"
+            });
+
+            if(response.ok) {
+                loadQuestions();
+            } else {
+                const json = await response.json();
+                alert('❌ Ошибка: ' + json.error);
+            }
+        } catch(err) {
+            alert('Ошибка: ' + err.message);
+        }
+    }
+
+    async function loadQuestions() {
+        const container = document.getElementById('questionList');
+        container.innerText = 'Загрузка...';
+
+        try {
+            const response = await fetch('/api/questions/get');
+            const questions = await response.json();
+
+            if (questions.length === 0) {
+                container.innerText = 'Нет вопросов(';
+                return;
+            }
+
+            let html = '<table border="1" style="border-collapse: collapse; width: 100%;">';
+            html += '<tr><th>ID</th><th>Текст вопроса</th><th>Ответ</th><th>Баллы</th><th>Действия</th></tr>';
+            
+            let totalPoints = 0;
+
+            for(const q of questions){
+                totalPoints += q.points;
+
+                html += `
+                <tr>
+                    <td>${q.id}</td>
+                    <td>${q.question_text}</td>
+                    <td>${q.correct_answer}</td>
+                    <td>${q.points}</td>
+                    <td><button onclick="deleteQuestion(${q.id})">Удалить</button></td>
+                </tr>`;
+            }
+            
+            html += '</table>';
+
+            html += `
+            <p>Общее кол-во баллов: ${totalPoints}</p>
+            `;
+
+            container.innerHTML = html;
+        } catch(err) {
+            container.innerText = 'Ошибка загрузки: ' + err.message;
+        }
+    }
+    loadQuestions();
+
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const question_text = document.getElementById('question_text').value;
+        const correct_answer = document.getElementById('correct_answer').value;
+        const points = document.getElementById('points').value;
+
+        const response = await fetch('/api/questions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              question_text: question_text,  
+              correct_answer: correct_answer,  
+              points: points,
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            form.reset();
+            loadQuestions();
+        } else {
+            alert('Ошибка: ' + result.error);
+        }
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "itd_exam",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "itd-sdk-js": "^1.2.1",
+    "nodemon": "^3.1.14",
+    "pg": "^8.20.0"
+  }
+}
