@@ -10,14 +10,37 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    client_encoding: 'utf8'
-});
+const pool = new Pool(
+    process.env.DATABASE_URL
+        ? {
+            connectionString: process.env.DATABASE_URL,
+            ssl: { rejectUnauthorized: false }
+          }
+        : {
+            host: process.env.DB_HOST,
+            port: process.env.DB_PORT,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+            client_encoding: 'utf8'
+          }
+);
+
+(async () => {
+    try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS questions (
+                id SERIAL PRIMARY KEY,
+                question_text TEXT NOT NULL,
+                correct_answer TEXT NOT NULL,
+                points INTEGER DEFAULT 1
+            )
+        `);
+
+    } catch(error) {
+        console.error('Ошибка при создании таблицы:', error.message);
+    }
+})
 
 app.post('/api/questions', async (req, res) => {
     const { question_text, correct_answer, points } = req.body; 
