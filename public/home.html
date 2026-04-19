@@ -1,19 +1,76 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <title>ЕГЭ по ИТД</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
     <div class="container">
-        <h1>📚 ЕГЭ по ИТД</h1>
-        <p>О нас, инструкция, правила, при поддержке 
-            <a href="https://github.com/Gam5510/ITDpy" target="_blank">ITDpy</a> и 
-            <a href="https://github.com/FriceKa/ITD-SDK-js" target="_blank">ITD-SDK-js</a>
-        </p>
+        <div class="header">
+            <h1>ЕГЭ по ИТД</h1>
+            <div id="userGreeting" class="user-greeting">Загрузка...</div>
+        </div>
 
-        <input type="text" placeholder="Введите ваш ИТД никнейм">
-        <button>Подтвердить</button>
+        <div class="description">
+            <h3>О нас</h3>
+            <p>Это неофициальный экзамен по социальной сети ИТД. Проект создан энтузиастами сообщества. Сайт написан за
+                4 дня при помощи пота и нейросети, так что если будет уязвимость из за которой выши данные сольются -
+                извините. Если будут вопросы пишите разрабу в тг: @Sneyrlll, мб отвечу.</p>
+
+            <h3>Правила</h3>
+            <p>Ну ээ не списывать и тд.</p>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="/variants">Варианты</a></li>
+                <li><a href="/answers">Мои результаты</a></li>
+            </ul>
+        </nav>
     </div>
+
+    <script src="/checkAuth.js" defer></script>
+
+    <script>
+        const userId = localStorage.getItem('user_id');
+        const username = localStorage.getItem('username');
+        const isAdmin = localStorage.getItem('is_admin') === 'true';
+
+        if (!userId || !username) {
+            window.location.href = '/auth.html';
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function loadUserGreeting() {
+            const greetingDiv = document.getElementById('userGreeting');
+            if (username) {
+                greetingDiv.innerHTML = `${escapeHtml(username)} <a href="/logout.html" style="margin-left: 10px; font-size: 12px;">Выйти</a>`;
+            } else {
+                greetingDiv.innerHTML = '<a href="/auth.html">Войти</a>';
+            }
+        }
+
+        function showAdminNav() {
+            const nav = document.querySelector('nav ul');
+            if (isAdmin && nav) {
+                const adminLi = document.createElement('li');
+                adminLi.innerHTML = '<a href="/admin">Админ Панель</a>';
+                nav.appendChild(adminLi);
+            }
+        }
+
+        loadUserGreeting();
+        showAdminNav();
+    </script>
 </body>
+
 </html>

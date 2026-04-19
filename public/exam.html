@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Экзамен по ИТД</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1 id="variant-title">Загрузка...</h1>
+
+        <div id="questions-container">Загрузка вопросов...</div>
+
+        <button id="submit-exam-btn" class="btn">Отправить экзамен</button>
+
+        <nav>
+            <ul>
+                <li><a href="/variants">← Назад к вариантам</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="result-modal" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <h2>Экзамен пройден!</h2>
+            <p>Мы проверим всё как можно быстрее! Статус проверки можно посмотреть в "Мои ответы"</p>
+            <button id="close-modal-btn" class="btn">В главное меню</button>
+        </div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id');
+        const username = localStorage.getItem('username');
+
+        if (!userId || !username) {
+            alert('Пожалуйста, войдите в аккаунт');
+            window.location.href = '/auth.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const variantId = urlParams.get('variant_id');
+
+        const submitBtn = document.getElementById('submit-exam-btn');
+        const modal = document.getElementById('result-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        async function loadQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = 'Загрузка вопросов...';
+
+            const response = await fetch(`/api/questions/variant/${variantId}`);
+            const questions = await response.json();
+
+            if (questions.length === 0) {
+                container.innerHTML = '<p>В этом варианте нет вопросов.</p>';
+                return;
+            }
+
+            let html = '';
+            questions.forEach((q, index) => {
+                html += `
+                    <div class="question-block">
+                        <p><strong>${index + 1}. ${q.question_text}</strong></p>
+                        ${q.image_url ? `<img src="${q.image_url}" style="max-width: 100%; margin: 10px 0; border-radius: 8px;">` : ''}
+                        <input type="text" class="answer-input" data-id="${q.id}" placeholder="Ваш ответ">
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        async function loadVariantTitle() {
+            const response = await fetch(`/api/variants/${variantId}`);
+            const variant = await response.json();
+            document.getElementById('variant-title').textContent = `Вариант ${variant.variant}`;
+        }
+
+        if (variantId) {
+            loadVariantTitle();
+            loadQuestions();
+        } else {
+            document.getElementById('questions-container').innerHTML = '<p>Ошибка: вариант не выбран</p>';
+        }
+
+        submitBtn.addEventListener('click', async () => {
+            const answers = {};
+            const inputs = document.querySelectorAll('.answer-input');
+            for (const input of inputs) {
+                const questionId = input.getAttribute('data-id');
+                answers[questionId] = input.value.trim();
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
+
+            try {
+                const response = await fetch('/api/exam/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        variant_id: variantId,
+                        answers: answers
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    modal.style.display = 'flex';
+                    closeModalBtn.onclick = () => {
+                        window.location.href = '/variants';
+                    };
+                } else {
+                    alert('Ошибка: ' + result.error);
+                }
+            } catch (err) {
+                alert('Ошибка при отправке');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить экзамен';
+            }
+        });
+    </script>
+</body>
+
+</html>

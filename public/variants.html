@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Варианты ЕГЭ по ИТД</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Варианты экзаменов</h1>
+        <div id="variantsList">Загрузка...</div>
+        <nav>
+            <ul>
+                <li><a href="/">Главная</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id');
+
+        async function loadVariants() {
+            const container = document.getElementById('variantsList');
+            container.innerHTML = 'Загрузка...';
+
+            const variantsRes = await fetch('/api/variants');
+            const variants = await variantsRes.json();
+
+            let completed = [];
+            if (userId) {
+                const completedRes = await fetch(`/api/exam/completed-variants?user_id=${userId}`);
+                completed = await completedRes.json();
+            }
+
+            if (variants.length === 0) {
+                container.innerHTML = '<p>Пока нет доступных вариантов.</p>';
+                return;
+            }
+
+            let html = '';
+            for (const v of variants) {
+                const isCompleted = completed.includes(v.id);
+                html += `
+            <div class="variant-card">
+                <div>
+                    <strong>Вариант ${v.variant}</strong>
+                </div>
+                <div>
+                    ${!isCompleted
+                        ? `<a href="/exam?variant_id=${v.id}" class="btn">Начать тест →</a>`
+                        : `<button class="btn" disabled style="background: #666; cursor: not-allowed;">Пройдено</button>`
+                    }
+                </div>
+            </div>
+        `;
+            }
+            container.innerHTML = html;
+        }
+
+        loadVariants();
+    </script>
+</body>
+
+</html>

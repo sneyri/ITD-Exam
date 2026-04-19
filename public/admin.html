@@ -1,113 +1,450 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
-    <title>Админка | Добавить вопрос</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ панель | ЕГЭ по ИТД</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-    <h1>Добавить вопрос</h1>
-    <form id="questionForm">
-        <input type="text" id="question_text" placeholder="Текст вопроса" required>
-        <input type="text" id="correct_answer" placeholder="Правильный ответ" required>
-        <input type="number" id="points" placeholder="Кол-во баллов" required>
-        <button type="submit">Добавить</button>
-    </form>
+    <div class="container">
+        <div class="header">
+            <h1>Админ панель</h1>
+            <div id="adminUserInfo" class="user-greeting"></div>
+        </div>
 
-    <h2>Существующие вопросы</h2>
-    <div id="questionList">Загрузка...</div>
-<script>
-    const form = document.getElementById('questionForm');
+        <div class="admin-container">
+            <aside class="admin-sidebar">
+                <button class="tab active" data-tab="variants">Варианты</button>
+                <button class="tab" data-tab="check">Проверка</button>
+                <button class="tab" data-tab="users">Пользователи</button>
+            </aside>
 
-    async function deleteQuestion(id) {
-        if(!confirm('Удалить вопрос?')) return;
+            <main class="admin-content">
+                <div id="tab-variants" class="tab-content active">
+                    <h2>Управление вариантами</h2>
+                    <button id="createVariantBtn" class="btn">Создать вариант</button>
+                    <div id="variantsList">Загрузка...</div>
+                    <div id="questionsEditor" style="display: none; margin-top: 20px;">
+                        <h3 id="questionsEditorTitle">Вопросы варианта</h3>
+                        <button id="closeQuestionsEditor" class="btn">← Назад к вариантам</button>
+                        <div id="questionsEditorList">Загрузка...</div>
+                    </div>
+                </div>
 
-        try {
-            const response = await fetch(`/api/questions/${id}`, {
-                method: "DELETE"
+                <div id="tab-check" class="tab-content">
+                    <h2>Проверка экзаменов</h2>
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Поиск по имени пользователя или ID">
+                        <button id="searchBtn" class="btn">Найти</button>
+                    </div>
+                    <div id="checkList">Загрузка...</div>
+                    <div id="pagination" class="pagination"></div>
+                </div>
+
+                <div id="tab-users" class="tab-content">
+                    <h2>Управление пользователями</h2>
+                    <div id="usersList">Загрузка...</div>
+                </div>
+
+                <div id="tab-settings" class="tab-content">
+                    <h2>Настройки</h2>
+                    <p>В разработке...</p>
+                </div>
+            </main>
+        </div>
+
+        <nav>
+            <ul>
+                <li><a href="/">← На главную</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="checkModal" class="modal">
+        <div class="modal-content">
+            <h2>📋 Проверка экзамена</h2>
+            <div id="modalResultInfo"></div>
+            <div id="modalAnswersContainer"></div>
+            <div class="form-group">
+                <label>Статус проверки:</label>
+                <select id="modalStatusSelect">
+                    <option value="in progress">На проверке</option>
+                    <option value="approved">Проверено</option>
+                    <option value="rejected">Аннулировать</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Комментарий:</label>
+                <textarea id="modalAdminComment" rows="3"></textarea>
+            </div>
+            <div class="modal-buttons">
+                <button id="modalSaveBtn" class="btn">Сохранить</button>
+                <button id="modalCloseBtn" class="btn cancel-btn">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id');
+        const isAdmin = localStorage.getItem('is_admin') === 'true';
+        const username = localStorage.getItem('username');
+
+        if (!isAdmin) {
+            alert('Доступ запрещён');
+            window.location.href = '/';
+        }
+
+        document.getElementById('adminUserInfo').innerHTML = `${username} <a href="/logout">Выйти</a>`;
+
+        const tabs = document.querySelectorAll('.tab');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                contents.forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+                if (tabId === 'variants') loadVariants();
+                if (tabId === 'check') loadCheckList();
+                if (tabId === 'users') loadUsers();
             });
-
-            if(response.ok) {
-                loadQuestions();
-            } else {
-                const json = await response.json();
-                alert('❌ Ошибка: ' + json.error);
-            }
-        } catch(err) {
-            alert('Ошибка: ' + err.message);
-        }
-    }
-
-    async function loadQuestions() {
-        const container = document.getElementById('questionList');
-        container.innerText = 'Загрузка...';
-
-        try {
-            const response = await fetch('/api/questions/get');
-            const questions = await response.json();
-
-            if (questions.length === 0) {
-                container.innerText = 'Нет вопросов(';
-                return;
-            }
-
-            let html = '<table border="1" style="border-collapse: collapse; width: 100%;">';
-            html += '<tr><th>ID</th><th>Текст вопроса</th><th>Ответ</th><th>Баллы</th><th>Действия</th></tr>';
-            
-            let totalPoints = 0;
-
-            for(const q of questions){
-                totalPoints += q.points;
-
-                html += `
-                <tr>
-                    <td>${q.id}</td>
-                    <td>${q.question_text}</td>
-                    <td>${q.correct_answer}</td>
-                    <td>${q.points}</td>
-                    <td><button onclick="deleteQuestion(${q.id})">Удалить</button></td>
-                </tr>`;
-            }
-            
-            html += '</table>';
-
-            html += `
-            <p>Общее кол-во баллов: ${totalPoints}</p>
-            `;
-
-            container.innerHTML = html;
-        } catch(err) {
-            container.innerText = 'Ошибка загрузки: ' + err.message;
-        }
-    }
-    loadQuestions();
-
-    form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const question_text = document.getElementById('question_text').value;
-        const correct_answer = document.getElementById('correct_answer').value;
-        const points = document.getElementById('points').value;
-
-        const response = await fetch('/api/questions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              question_text: question_text,  
-              correct_answer: correct_answer,  
-              points: points,
-            })
         });
 
-        const result = await response.json();
+        async function loadVariants() {
+            const container = document.getElementById('variantsList');
+            container.innerHTML = 'Загрузка...';
+            const response = await fetch('/api/variants');
+            const variants = await response.json();
+            if (variants.length === 0) {
+                container.innerHTML = '<p>Нет вариантов. Создайте первый!</p>';
+                return;
+            }
+            let html = '<div class="variants-grid">';
+            for (const v of variants) {
+                html += `
+            <div class="variant-card">
+                <div><strong>Вариант ${v.variant}</strong></div>
+                <div>
+                    <button class="btn edit-variant" data-id="${v.id}" data-number="${v.variant}">Редактировать вопросы</button>
+                    <button class="btn delete-variant" data-id="${v.id}">🗑 Удалить</button>
+                </div>
+            </div>
+        `;
+            }
+            html += '</div>';
+            container.innerHTML = html;
 
-        if (response.ok) {
-            form.reset();
-            loadQuestions();
-        } else {
-            alert('Ошибка: ' + result.error);
+            document.querySelectorAll('.edit-variant').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const variantId = btn.getAttribute('data-id');
+                    const variantNumber = btn.getAttribute('data-number');
+                    openQuestionsEditor(variantId, variantNumber);
+                });
+            });
+
+            document.querySelectorAll('.delete-variant').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm('Удалить вариант?')) {
+                        await fetch(`/api/variants/${id}`, { method: 'DELETE' });
+                        loadVariants();
+                    }
+                });
+            });
         }
-    })
-</script>
+
+        async function openQuestionsEditor(variantId, variantNumber) {
+            document.getElementById('variantsList').style.display = 'none';
+            document.getElementById('createVariantBtn').style.display = 'none';
+            document.getElementById('questionsEditor').style.display = 'block';
+            document.getElementById('questionsEditorTitle').innerHTML = `Редактирование варианта ${variantNumber}`;
+
+            const container = document.getElementById('questionsEditorList');
+            container.innerHTML = `
+        <div id="questionFormContainer" style="margin-bottom: 24px; padding: 20px; background: var(--bg-tertiary); border-radius: 12px;">
+            <h3 style="margin-bottom: 16px;">Добавить новый вопрос</h3>
+            <input type="text" id="newQuestionText" placeholder="Текст вопроса" style="width: 100%; margin-bottom: 12px;">
+            <input type="text" id="newCorrectAnswer" placeholder="Правильный ответ" style="width: 100%; margin-bottom: 12px;">
+            <input type="number" id="newPoints" placeholder="Баллы" value="1" style="width: 100%; margin-bottom: 12px;">
+            <button id="addQuestionBtn" class="btn">Добавить вопрос</button>
+        </div>
+        <h3>Список вопросов</h3>
+        <div id="questionsListContainer">Загрузка...</div>
+    `;
+
+            async function loadQuestionsList() {
+                const listContainer = document.getElementById('questionsListContainer');
+                const response = await fetch(`/api/questions/variant/${variantId}`);
+                const questions = await response.json();
+
+                if (questions.length === 0) {
+                    listContainer.innerHTML = '<p>Нет вопросов. Добавьте первый!</p>';
+                    return;
+                }
+
+                let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Текст вопроса</th><th>Ответ</th><th>Баллы</th><th>Действия</th></tr></thead><tbody>';
+                for (const q of questions) {
+                    html += `<tr>
+                <td>${q.id}</td>
+                <td>${escapeHtml(q.question_text)}</td>
+                <td>${escapeHtml(q.correct_answer)}</td>
+                <td>${q.points}</td>
+                <td><button class="delete-question-btn" data-id="${q.id}" style="background: #dc2626; color: white; border: none; padding: 4px 12px; border-radius: 6px;">🗑 Удалить</button></td>
+            </tr>`;
+                }
+                html += '</tbody></table>';
+                listContainer.innerHTML = html;
+
+                document.querySelectorAll('.delete-question-btn').forEach(btn => {
+                    btn.addEventListener('click', async () => {
+                        const id = btn.getAttribute('data-id');
+                        if (confirm('Удалить вопрос?')) {
+                            await fetch(`/api/questions/${id}`, { method: 'DELETE' });
+                            loadQuestionsList();
+                        }
+                    });
+                });
+            }
+
+            document.getElementById('addQuestionBtn')?.addEventListener('click', async () => {
+                const question_text = document.getElementById('newQuestionText').value;
+                const correct_answer = document.getElementById('newCorrectAnswer').value;
+                const points = document.getElementById('newPoints').value;
+
+                if (!question_text || !correct_answer) {
+                    alert('Заполните текст вопроса и правильный ответ');
+                    return;
+                }
+
+                await fetch('/api/questions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        question_text,
+                        correct_answer,
+                        points: parseInt(points),
+                        variant_id: parseInt(variantId)
+                    })
+                });
+
+                document.getElementById('newQuestionText').value = '';
+                document.getElementById('newCorrectAnswer').value = '';
+                document.getElementById('newPoints').value = '1';
+                loadQuestionsList();
+            });
+
+            loadQuestionsList();
+        }
+
+        document.getElementById('closeQuestionsEditor')?.addEventListener('click', () => {
+            document.getElementById('questionsEditor').style.display = 'none';
+            document.getElementById('variantsList').style.display = 'block';
+            document.getElementById('createVariantBtn').style.display = 'block';
+        });
+
+        document.getElementById('createVariantBtn')?.addEventListener('click', async () => {
+            await fetch('/api/variants', { method: 'POST' });
+            loadVariants();
+        });
+
+        let currentPage = 1;
+        let currentSearch = '';
+
+        async function loadCheckList() {
+            const container = document.getElementById('checkList');
+            container.innerHTML = 'Загрузка...';
+            const response = await fetch(`/api/admin/check?page=${currentPage}&limit=10&search=${encodeURIComponent(currentSearch)}`, {
+                headers: { 'user-id': userId }
+            });
+            const data = await response.json();
+            const variants = data.rows || [];
+            if (variants.length === 0) {
+                container.innerHTML = '<p>Нет вариантов для проверки</p>';
+                return;
+            }
+            let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Пользователь</th><th>Вариант</th><th>Дата</th><th>Статус</th><th>Действия</th></tr></thead><tbody>';
+            for (const v of variants) {
+                const date = new Date(v.created_at).toLocaleString();
+                let statusClass = '';
+                if (v.status === 'in progress') statusClass = 'status-pending';
+                else if (v.status === 'approved') statusClass = 'status-approved';
+                else if (v.status === 'rejected') statusClass = 'status-rejected';
+                html += `<tr>
+            <td>${v.id}</td>
+            <td>${escapeHtml(v.user_name)}</td>
+            <td>Вариант ${v.variant_id}</td>
+            <td>${date}</td>
+            <td class="${statusClass}">${v.status}</td>
+            <td><button class="btn-check" data-id="${v.id}">Проверить</button></td>
+        </tr>`;
+            }
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            document.querySelectorAll('.btn-check').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const resultId = btn.getAttribute('data-id');
+                    openCheckModal(resultId);
+                });
+            });
+        }
+
+        document.getElementById('searchBtn')?.addEventListener('click', () => {
+            currentSearch = document.getElementById('searchInput').value;
+            currentPage = 1;
+            loadCheckList();
+        });
+
+        async function loadUsers(searchTerm = '') {
+            const container = document.getElementById('usersList');
+            container.innerHTML = 'Загрузка...';
+
+            let url = '/api/admin/users';
+            if (searchTerm) {
+                url += `?search=${encodeURIComponent(searchTerm)}`;
+            }
+
+            const response = await fetch(url, {
+                headers: { 'user-id': userId }
+            });
+            const users = await response.json();
+
+            let html = `
+                <div class="search-bar" style="margin-bottom: 20px;">
+                    <input type="text" id="userSearchInput" placeholder="Поиск по ID или нику..." value="${escapeHtml(searchTerm)}">
+                    <button id="userSearchBtn" class="btn">Найти</button>
+                    <button id="userResetBtn" class="btn">Сбросить</button>
+                </div>
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>ID</th><th>Логин</th><th>Админ</th><th>Действия</th></tr>
+                    </thead>
+                    <tbody>
+                `;
+
+            for (const u of users) {
+                html += `<tr>
+            <td>${u.id}</td>
+            <td>${escapeHtml(u.username)}</td>
+            <td>${u.is_admin ? 'Да' : 'Нет'}</td>
+            <td>
+                ${!u.is_admin
+                        ? `<button class="make-admin" data-id="${u.id}">Сделать админом</button>`
+                        : `<button class="remove-admin" data-id="${u.id}">Снять админа</button>`
+                    }
+            </td>
+        </tr>`;
+            }
+            html += `</tbody></table>`;
+            container.innerHTML = html;
+
+            document.getElementById('userSearchBtn')?.addEventListener('click', () => {
+                const search = document.getElementById('userSearchInput').value;
+                loadUsers(search);
+            });
+
+            document.getElementById('userResetBtn')?.addEventListener('click', () => {
+                document.getElementById('userSearchInput').value = '';
+                loadUsers('');
+            });
+
+            document.getElementById('userSearchInput')?.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const search = document.getElementById('userSearchInput').value;
+                    loadUsers(search);
+                }
+            });
+
+            document.querySelectorAll('.make-admin').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    await fetch(`/api/admin/users/${id}/make-admin`, { method: 'POST', headers: { 'user-id': userId } });
+                    loadUsers(document.getElementById('userSearchInput')?.value || '');
+                });
+            });
+
+            document.querySelectorAll('.remove-admin').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    await fetch(`/api/admin/users/${id}/remove-admin`, { method: 'POST', headers: { 'user-id': userId } });
+                    loadUsers(document.getElementById('userSearchInput')?.value || '');
+                });
+            });
+        }
+
+        let currentResultId = null;
+        let currentAnswers = [];
+
+        async function openCheckModal(resultId) {
+            currentResultId = resultId;
+            const response = await fetch(`/api/exam/result/${resultId}`);
+            const data = await response.json();
+            document.getElementById('modalResultInfo').innerHTML = `
+        <p><strong>Пользователь:</strong> ${escapeHtml(data.result.user_name)}</p>
+        <p><strong>Вариант:</strong> ${data.result.variant_id}</p>
+        <p><strong>Дата:</strong> ${new Date(data.result.created_at).toLocaleString()}</p>
+    `;
+            currentAnswers = data.answers;
+            let html = '<table class="admin-table"><thead><tr><th>Вопрос</th><th>Ответ пользователя</th><th>Правильный ответ</th><th>Верно?</th></tr></thead><tbody>';
+            for (const ans of data.answers) {
+                html += `<tr>
+            <td>${escapeHtml(ans.question_text)}</td>
+            <td>${escapeHtml(ans.user_answer || '(не указан)')}</td>
+            <td>${escapeHtml(ans.correct_answer)}</td>
+            <td><input type="checkbox" class="answer-correct" data-id="${ans.id}" ${ans.is_correct ? 'checked' : ''}></td>
+        </tr>`;
+            }
+            html += '</tbody></table>';
+            document.getElementById('modalAnswersContainer').innerHTML = html;
+            document.getElementById('modalStatusSelect').value = data.result.status;
+            document.getElementById('modalAdminComment').value = data.result.admin_comment || '';
+            document.getElementById('checkModal').style.display = 'flex';
+        }
+
+        document.getElementById('modalSaveBtn')?.addEventListener('click', async () => {
+            const status = document.getElementById('modalStatusSelect').value;
+            const adminComment = document.getElementById('modalAdminComment').value;
+            const checkboxes = document.querySelectorAll('.answer-correct');
+            const answersReview = [];
+            checkboxes.forEach(cb => {
+                answersReview.push({
+                    user_answer_id: parseInt(cb.getAttribute('data-id')),
+                    is_correct: cb.checked
+                });
+            });
+            let totalScore = 0;
+            let maxScore = 0;
+            for (const ans of currentAnswers) {
+                maxScore += ans.points || 1;
+                const reviewed = answersReview.find(r => r.user_answer_id === ans.id);
+                if (reviewed && reviewed.is_correct) totalScore += ans.points || 1;
+            }
+            await fetch(`/api/exam/result/${currentResultId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, admin_comment: adminComment, answers_review: answersReview, score: totalScore, max_score: maxScore })
+            });
+            document.getElementById('checkModal').style.display = 'none';
+            loadCheckList();
+        });
+
+        document.getElementById('modalCloseBtn')?.addEventListener('click', () => {
+            document.getElementById('checkModal').style.display = 'none';
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        loadVariants();
+    </script>
 </body>
+
 </html>

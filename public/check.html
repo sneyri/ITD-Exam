@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка варианта</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>📋 Проверка экзамена</h1>
+        <div id="resultInfo"></div>
+
+        <h2>Ответы пользователя</h2>
+        <div id="answersContainer">Загрузка...</div>
+
+        <div class="form-group" style="margin-top: 20px;">
+            <label>Статус проверки:</label>
+            <select id="statusSelect">
+                <option value="in progress">На проверке</option>
+                <option value="approved">Проверено</option>
+                <option value="rejected">Аннулировать</option>
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+            <label>Комментарий админа (необязательно):</label>
+            <textarea id="adminComment" rows="3" placeholder="Напишите комментарий для пользователя..."></textarea>
+        </div>
+
+        <button id="submitReviewBtn" class="btn">Сохранить проверку</button>
+        <a href="/admin" class="btn" style="background: #666;">← Назад</a>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const resultId = urlParams.get('result_id');
+        let answersData = [];
+
+        async function loadResult() {
+            const response = await fetch(`/api/exam/result/${resultId}`);
+            const data = await response.json();
+            answersData = data.answers;
+
+            const resultInfo = document.getElementById('resultInfo');
+            resultInfo.innerHTML = `
+                <div class="question-block">
+                    <p><strong>Пользователь:</strong> ${escapeHtml(data.result.user_name)}</p>
+                    <p><strong>Вариант:</strong> ${data.result.variant_id}</p>
+                    <p><strong>Дата:</strong> ${new Date(data.result.created_at).toLocaleString()}</p>
+                    <p><strong>Статус:</strong> <span id="currentStatus">${data.result.status}</span></p>
+                </div>
+            `;
+
+            document.getElementById('statusSelect').value = data.result.status;
+            document.getElementById('adminComment').value = data.result.admin_comment || '';
+
+            const container = document.getElementById('answersContainer');
+            let html = `
+                <div class="answers-header">
+                    <div style="flex: 3;">Вопрос</div>
+                    <div style="flex: 2;">Ответ пользователя</div>
+                    <div style="flex: 2;">Правильный ответ</div>
+                    <div style="flex: 1; text-align: center;">Верно?</div>
+                </div>
+            `;
+
+            for (let i = 0; i < answersData.length; i++) {
+                const ans = answersData[i];
+                html += `
+                    <div class="answer-row" data-index="${i}">
+                        <div class="answer-question">${escapeHtml(ans.question_text)}</div>
+                        <div class="answer-user">${escapeHtml(ans.user_answer || '(не указан)')}</div>
+                        <div class="answer-correct">${escapeHtml(ans.correct_answer)}</div>
+                        <div class="answer-checkbox">
+                            <input type="checkbox" class="correct-checkbox" data-index="${i}" ${ans.is_correct ? 'checked' : ''}>
+                        </div>
+                    </div>
+                `;
+            }
+
+            container.innerHTML = html;
+
+            document.querySelectorAll('.correct-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const index = parseInt(e.target.getAttribute('data-index'));
+                    answersData[index].is_correct = e.target.checked;
+                });
+            });
+        }
+
+        document.getElementById('submitReviewBtn').addEventListener('click', async () => {
+            const status = document.getElementById('statusSelect').value;
+            const adminComment = document.getElementById('adminComment').value;
+
+            let totalScore = 0;
+            let maxScore = 0;
+
+            for (const ans of answersData) {
+                const points = ans.points || 1;
+                maxScore += points;
+                if (ans.is_correct) {
+                    totalScore += points;
+                    ans.points_awarded = points; 
+                } else {
+                    ans.points_awarded = 0;
+                }
+            }
+
+            const answersReview = answersData.map(ans => ({
+                user_answer_id: ans.id,
+                is_correct: ans.is_correct || false
+            }));
+
+            const response = await fetch(`/api/exam/result/${resultId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    status,
+                    admin_comment: adminComment,
+                    answers_review: answersReview,
+                    score: totalScore,
+                    max_score: maxScore
+                })
+            });
+
+            if (response.ok) {
+                window.location.href = '/admin';
+            } else {
+                const err = await response.json();
+                alert('Ошибка: ' + err.error);
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        if (resultId) {
+            loadResult();
+        } else {
+            document.getElementById('answersContainer').innerHTML = '<p class="error-message">Ошибка: результат не выбран</p>';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Выход</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Выход из аккаунта</h1>
+        <p>Вы уверены, что хотите выйти?</p>
+        <button id="logoutBtn" class="btn">Да, выйти</button>
+        <a href="/" class="btn" style="background: #666;">Отмена</a>
+    </div>
+
+    <script>
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('username');
+            localStorage.removeItem('is_admin');
+            window.location.href = '/';
+        });
+    </script>
+</body>
+</html>

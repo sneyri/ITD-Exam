@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои результаты</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Мои результаты</h1>
+
+        <div id="resultsContainer">Загрузка...</div>
+
+        <nav>
+            <ul>
+                <li><a href="/">Главная</a></li>
+                <li><a href="/variants">Варианты</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('user_id');
+
+        if (!userId) {
+            alert('Пожалуйста, войдите в аккаунт');
+            window.location.href = '/auth.html';
+        }
+
+        async function loadResults() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = '<div class="no-results">Загрузка...</div>';
+
+            try {
+                const response = await fetch(`/api/exam/my-results?user_id=${userId}`);
+                const results = await response.json();
+
+                if (!response.ok || results.length === 0) {
+                    container.innerHTML = '<div class="no-results">У вас пока нет результатов. Пройдите экзамен.</div>';
+                    return;
+                }
+
+                let html = `
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Вариант</th>
+                                <th colspan="2">Баллы</th>
+                                <th>Статус и комментарий</th>
+                                <th>Дата сдачи</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                for (const r of results) {
+                    let statusText = '';
+                    let statusClass = '';
+                    switch (r.status) {
+                        case 'in progress':
+                            statusText = 'На проверке';
+                            statusClass = 'status-pending';
+                            break;
+                        case 'approved':
+                            statusText = 'Проверено';
+                            statusClass = 'status-approved';
+                            break;
+                        case 'rejected':
+                            statusText = 'Аннулировано';
+                            statusClass = 'status-rejected';
+                            break;
+                        default:
+                            statusText = r.status;
+                            statusClass = '';
+                    }
+
+                    const score = r.score !== undefined ? r.score : '—';
+                    const maxScore = r.max_score !== undefined ? r.max_score : '—';
+
+                    let statusWithComment = `<div class="status-text ${statusClass}">${statusText}</div>`;
+                    if (r.admin_comment) {
+                        statusWithComment += `<div class="comment-text">${escapeHtml(r.admin_comment)}</div>`;
+                    }
+
+                    html += `
+                        <tr>
+                            <td>Вариант ${r.variant_number !== undefined ? r.variant_number : r.variant_id}</td>
+                            <td colspan="2" style="text-align: center; font-weight: 600;">${score} / ${maxScore}</td>
+                            <td class="status-comment-cell">${statusWithComment}</td>
+                            <td>${new Date(r.created_at).toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+
+                html += `</tbody></table>`;
+                container.innerHTML = html;
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="no-results">❌ Ошибка загрузки результатов</div>';
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        loadResults();
+    </script>
+</body>
+
+</html>
