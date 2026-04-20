@@ -55,9 +55,9 @@
         function loadUserGreeting() {
             const greetingDiv = document.getElementById('userGreeting');
             if (username) {
-                greetingDiv.innerHTML = `${escapeHtml(username)} <a href="/logout.html" style="margin-left: 10px; font-size: 12px;">Выйти</a>`;
+                greetingDiv.innerHTML = `${escapeHtml(username)} <a href="/logout" style="margin-left: 10px; font-size: 12px;">Выйти</a>`;
             } else {
-                greetingDiv.innerHTML = '<a href="/auth.html">Войти</a>';
+                greetingDiv.innerHTML = '<a href="/auth">Войти</a>';
             }
         }
 
