@@ -32,26 +32,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.get('/me', async (req, res) => {
-    const userId = req.headers['user-id'];
-    
-    if (!userId) {
-        return res.status(401).json({ error: 'Не авторизован' });
-    }
-
-    try {
-        const result = await pool.query('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
@@ -78,6 +58,24 @@ router.post('/login', async (req, res) => {
                 is_admin: user.is_admin 
             } 
         });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.get('/me', async (req, res) => {
+    const userId = req.headers['user-id'];
+    
+    if (!userId) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+
+    try {
+        const result = await pool.query('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Пользователь не найден' });
+        }
+        res.json(result.rows[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

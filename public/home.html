@@ -34,45 +34,8 @@
         <img class="home_label" src="assets/home_label.png" alt="Картинка...">
     </div>
 
-    <script src="js/checkAuth.js" defer></script>
-
-    <script>
-        const userId = localStorage.getItem('user_id');
-        const username = localStorage.getItem('username');
-        const isAdmin = localStorage.getItem('is_admin') === 'true';
-
-        if (!userId || !username) {
-            window.location.href = '/auth';
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function loadUserGreeting() {
-            const greetingDiv = document.getElementById('userGreeting');
-            if (username) {
-                greetingDiv.innerHTML = `${escapeHtml(username)} <a href="/logout" style="margin-left: 10px; font-size: 12px;">Выйти</a>`;
-            } else {
-                greetingDiv.innerHTML = '<a href="/auth">Войти</a>';
-            }
-        }
-
-        function showAdminNav() {
-            const nav = document.querySelector('nav ul');
-            if (isAdmin && nav) {
-                const adminLi = document.createElement('li');
-                adminLi.innerHTML = '<a href="/admin">Админ Панель</a>';
-                nav.appendChild(adminLi);
-            }
-        }
-
-        loadUserGreeting();
-        showAdminNav();
-    </script>
+    <script src="js/utils/helper.js"></script>
+    <script src="js/pages/home.js"></script>
 </body>
 
 </html>

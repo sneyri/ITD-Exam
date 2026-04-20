@@ -14,13 +14,7 @@
         <a href="/" class="btn" style="background: #666;">Отмена</a>
     </div>
 
-    <script>
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            localStorage.removeItem('user_id');
-            localStorage.removeItem('username');
-            localStorage.removeItem('is_admin');
-            window.location.href = '/';
-        });
-    </script>
+    <script src="js/utils/helper.js"></script>
+    <script src="js/pages/logout.js"></script>
 </body>
 </html>

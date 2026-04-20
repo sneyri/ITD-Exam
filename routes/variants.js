@@ -4,16 +4,7 @@ const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM exam_variants ORDER BY variant');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-router.get('/check', async (req, res) => {
-    try {
-        const result = await pool.query("SELECT * FROM exam_results WHERE status = 'in progress' ORDER BY created_at");
+        const result = await pool.query('SELECT * FROM exam_variants ORDER BY id');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -34,27 +25,30 @@ router.get('/:id', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    const maxResult = await pool.query('SELECT COALESCE(MAX(variant), 0) as max FROM exam_variants');
-    const nextNumber = maxResult.rows[0].max + 1;
-    const result = await pool.query(
-        'INSERT INTO exam_variants (variant) VALUES ($1) RETURNING *',
-        [nextNumber]
-    );
-    res.status(201).json(result.rows[0]);
+    const { title } = req.body;
+    if (!title) {
+        return res.status(400).json({ error: 'Название обязательно' });
+    }
+    try {
+        const result = await pool.query(
+            'INSERT INTO exam_variants (title) VALUES ($1) RETURNING *',
+            [title]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
-
     try {
         await pool.query('DELETE FROM questions WHERE variant_id = $1', [id]);
-
         await pool.query('DELETE FROM exam_variants WHERE id = $1', [id]);
-
-        res.json({ message: 'Вариант и все его вопросы удалены' });
+        res.json({ message: 'Вариант удалён' });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: err.message });
     }
 });
+
 module.exports = router;
