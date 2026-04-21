@@ -60,7 +60,7 @@
         
         try {
             const variant = await getJSON(`/api/variants/${variantId}`);
-            titleElem.textContent = `Вариант ${variant.variant}`;
+            titleElem.textContent = variant.title || 'Без названия';
         } catch (err) {
             titleElem.textContent = 'Вариант не найден';
         }
