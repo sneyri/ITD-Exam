@@ -32,15 +32,26 @@
             for (const r of results) {
                 const score = r.score !== undefined ? r.score : '—';
                 const maxScore = r.max_score !== undefined ? r.max_score : '—';
-                const variantTitle = r.variant_title || 'Без названия';
+                const deleteName = 'Вариант удален('
+                const variantTitle = r.variant_title || deleteName;
 
-                html += `
+                if (variantTitle != deleteName) {
+                    html += `
                     <tr data-id="${r.id}" class="result-row">
                         <td>${escapeHtml(variantTitle)}</div>
                         <td colspan="2" style="text-align: center; font-weight: 600;">${score} / ${maxScore}</div>
                         <td>${formatDate(r.created_at)}</div>
                     </tr>
-                `;
+                    `;
+                } else {
+                    html += `
+                    <tr data-id="${r.id}" class="result-row">
+                        <td>${escapeHtml(deleteName)}</div>
+                        <td colspan="2" style="text-align: center; font-weight: 600;">${score} / ${maxScore}</div>
+                        <td>${formatDate(r.created_at)}</div>
+                    </tr>
+                    `;
+                }
             }
 
             html += `</tbody></div>`;

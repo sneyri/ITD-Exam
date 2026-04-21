@@ -99,7 +99,7 @@ a:hover {
     background: var(--bg-secondary);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-lg);
-    font-size: 0.875rem;
+    font-size: 1.25rem;
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -109,7 +109,7 @@ a:hover {
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: var(--radius-sm);
-    font-size: 0.75rem;
+    font-size: 1rem;
 }
 
 .user-greeting a:hover {
@@ -169,6 +169,7 @@ nav ul {
 nav ul li a {
     color: var(--text-secondary);
     font-weight: 500;
+    font-size: 24px;
 }
 
 nav ul li a:hover {
@@ -1153,10 +1154,10 @@ button.remove-admin:hover {
 
 .home_label {
     width: 100%;
-    height: 400px;
+    height: 300px;
     border-radius: 25px;
     box-shadow: 0 5px 20px black;
-    margin-top: 20px;
+    margin-top: 40px;
     transition-duration: 500ms;
 }
 
@@ -1676,4 +1677,17 @@ button.remove-admin:hover {
 .btn-small:hover {
     background: var(--accent-dark);
     transform: translateY(-1px);
+}
+
+.result-image {
+    width: 50%;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.1), 0 0 0 4px #1a1a1a;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: brightness(1.05) contrast(1.1);
+}
+
+.result-image:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 35px -8px rgba(0, 0, 0, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.2), 0 0 0 5px #2a2a2a;
 }

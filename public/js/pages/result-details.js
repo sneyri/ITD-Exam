@@ -54,7 +54,7 @@
 
             const imgHtml = `
                 <div style="text-align: center; margin-top: 30px;">
-                    <img src="/assets/${imageName}.jpg" alt="${imageName}">
+                    <img class="result-image" src="/assets/${imageName}.jpg" alt="${imageName}">
                 </div>
             `;
 
