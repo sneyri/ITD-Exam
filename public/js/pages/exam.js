@@ -1,4 +1,4 @@
-(function() {
+(function () {
     if (!requireAuth()) return;
 
     const userId = getUser().id;
@@ -8,18 +8,16 @@
     const submitBtn = document.getElementById('submit-exam-btn');
     const modal = document.getElementById('result-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
-    let resultScore = null;
-    let resultMaxScore = null;
 
     async function loadQuestions() {
         const container = document.getElementById('questions-container');
         if (!container) return;
-        
+
         showLoading(container);
 
         try {
             const questions = await getJSON(`/api/questions/variant/${variantId}`);
-            
+
             if (questions.length === 0) {
                 container.innerHTML = '<p>В этом варианте нет вопросов.</p>';
                 return;
@@ -31,9 +29,10 @@
                 html += `
                     <div class="question-block" data-question-id="${q.id}">
                         <p><strong>${i + 1}. ${escapeHtml(q.question_text)}</strong></p>
+                        ${q.image_url ? `<img src="${q.image_url}" class="question-image" alt="Изображение к вопросу">` : ''}
                         <div class="options-list">
                 `;
-                
+
                 if (q.options && q.options.length > 0) {
                     for (let j = 0; j < q.options.length; j++) {
                         const opt = q.options[j];
@@ -45,7 +44,7 @@
                         `;
                     }
                 }
-                
+
                 html += `</div></div>`;
             }
             container.innerHTML = html;
@@ -57,7 +56,7 @@
     async function loadVariantTitle() {
         const titleElem = document.getElementById('variant-title');
         if (!titleElem || !variantId) return;
-        
+
         try {
             const variant = await getJSON(`/api/variants/${variantId}`);
             titleElem.textContent = variant.title || 'Без названия';
@@ -68,11 +67,12 @@
 
     async function submitExam() {
         const answers = {};
-        
+
         const radioInputs = document.querySelectorAll('input[type="radio"]:checked');
         radioInputs.forEach(input => {
             const questionId = input.getAttribute('data-question');
-            answers[questionId] = input.getAttribute('data-option');
+            const optionId = input.getAttribute('data-option');
+            answers[questionId] = optionId;
         });
 
         if (Object.keys(answers).length === 0) {
@@ -91,13 +91,11 @@
             });
 
             if (result) {
-                resultScore = result.score;
-                resultMaxScore = result.maxScore;
                 document.getElementById('result-score').textContent = `${result.score} / ${result.maxScore}`;
                 modal.style.display = 'flex';
             }
         } catch (err) {
-            alert('Ошибка при отправке');
+            alert('Ошибка при отправке: ' + err.message);
         } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Отправить экзамен';

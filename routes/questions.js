@@ -2,7 +2,6 @@ const express = require('express');
 const pool = require('../db');
 const router = express.Router();
 
-// GET /api/questions/variant/:variantId
 router.get('/variant/:variantId', async (req, res) => {
     const { variantId } = req.params;
 
@@ -12,7 +11,6 @@ router.get('/variant/:variantId', async (req, res) => {
             [variantId]
         );
         
-        // Для каждого вопроса получаем варианты ответов
         for (const q of questions.rows) {
             const options = await pool.query(
                 'SELECT id, option_text, is_correct FROM question_options WHERE question_id = $1 ORDER BY sort_order',
@@ -28,26 +26,25 @@ router.get('/variant/:variantId', async (req, res) => {
     }
 });
 
-// POST /api/questions
 router.post('/', async (req, res) => {
-    const { question_text, points, variant_id, options } = req.body;
-    
+    const { question_text, points, variant_id, options, image_url } = req.body;
+
     if (!question_text || !variant_id) {
-        return res.status(400).json({ error: 'Заполните все поля (включая variant_id)' });
+        return res.status(400).json({ error: 'Заполните все поля' });
     }
 
     const client = await pool.connect();
-    
+
     try {
         await client.query('BEGIN');
-        
+
         const result = await client.query(
-            'INSERT INTO questions (question_text, points, variant_id) VALUES ($1, $2, $3) RETURNING id',
-            [question_text, points || 1, variant_id]
+            'INSERT INTO questions (question_text, points, variant_id, image_url) VALUES ($1, $2, $3, $4) RETURNING id',
+            [question_text, points || 1, variant_id, image_url || null]
         );
-        
+
         const questionId = result.rows[0].id;
-        
+
         if (options && options.length > 0) {
             for (let i = 0; i < options.length; i++) {
                 await client.query(
@@ -56,7 +53,7 @@ router.post('/', async (req, res) => {
                 );
             }
         }
-        
+
         await client.query('COMMIT');
         res.status(201).json({ id: questionId });
     } catch (err) {
@@ -68,7 +65,6 @@ router.post('/', async (req, res) => {
     }
 });
 
-// DELETE /api/questions/:id
 router.delete('/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -79,7 +75,6 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// PUT /api/questions/:id
 router.put('/:id', async (req, res) => {
     const { id } = req.params;
     const { question_text, points, variant_id, options } = req.body;

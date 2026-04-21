@@ -1,5 +1,6 @@
 (function () {
     let currentVariantId = null;
+    let currentImageUrl = null;
 
     window.loadVariants = async function () {
         const tbody = document.getElementById('variantsTableBody');
@@ -11,7 +12,7 @@
             const variants = await getJSON('/api/variants');
 
             if (variants.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2">Нет вариантов. Создайте первый!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="2">Нет вариантов. Создайте первый!<\/div><\/div>';
                 return;
             }
 
@@ -22,7 +23,7 @@
                         <td class="variant-title">${escapeHtml(v.title)}</td>
                         <td class="variant-actions">
                             <button class="btn-edit-questions" data-id="${v.id}" data-title="${escapeHtml(v.title)}">Редактировать</button>
-                            <button class="btn-delete" data-id="${v.id}">Удалить</button>
+                            <button class="btn-delete" data-id="${v.id}">🗑 Удалить</button>
                         </td>
                     </tr>
                 `;
@@ -47,7 +48,7 @@
                 });
             });
         } catch (err) {
-            tbody.innerHTML = '<tr><td colspan="2">Ошибка загрузки вариантов</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="2">Ошибка загрузки вариантов<\/div><\/div>';
         }
     };
 
@@ -64,16 +65,14 @@
 
     window.openQuestionsEditor = async function (variantId, variantTitle) {
         currentVariantId = variantId;
-        
+        currentImageUrl = null;
+
+        const variantsContainer = document.getElementById('tab-variants');
         const editor = document.getElementById('questionsEditor');
-        const editorTitle = document.getElementById('questionsEditorTitle');
-        
-        if (editor) {
-            editor.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-        if (editorTitle) editorTitle.textContent = `Вопросы варианта: ${variantTitle}`;
-        
+
+        if (variantsContainer) variantsContainer.style.display = 'none';
+        if (editor) editor.style.display = 'flex';
+
         await loadQuestionsList();
     };
 
@@ -82,103 +81,148 @@
         if (!listContainer) return;
 
         listContainer.innerHTML = `
-            <div class="question-form-container">
-                <h3>Добавить новый вопрос</h3>
-                <input type="text" id="newQuestionText" placeholder="Текст вопроса">
-                <div id="newOptionsContainer">
-                    <h4>Варианты ответов</h4>
-                    <div id="newOptionsList">
-                        <div class="option-row">
-                            <input type="text" class="option-text" placeholder="Вариант ответа">
-                            <label><input type="radio" name="newCorrectOption" value="0" class="correct-radio" checked> Верный</label>
-                            <button type="button" class="remove-option-btn">✖</button>
-                        </div>
-                    </div>
-                    <button type="button" id="addNewOptionBtn" class="btn-small">Добавить вариант</button>
+            <div class="modal-container">
+                <div class="modal-header">
+                    <h3>Вопросы варианта: ${escapeHtml(document.querySelector('.btn-edit-questions.active')?.getAttribute('data-title') || '')}</h3>
+                    <button id="closeQuestionsEditor" class="close-btn">&times;</button>
                 </div>
-                <input type="number" id="newPoints" placeholder="Баллы" value="1">
-                <button id="addQuestionBtn" class="btn">Добавить вопрос</button>
+                <div class="modal-body">
+                    <div class="question-form-container">
+                        <h3>Добавить новый вопрос</h3>
+                        <input type="text" id="newQuestionText" placeholder="Текст вопроса">
+                        <div id="newOptionsContainer">
+                            <h4>Варианты ответов</h4>
+                            <div id="newOptionsList">
+                                <div class="option-row">
+                                    <input type="text" class="option-text" placeholder="Вариант ответа">
+                                    <label><input type="radio" name="newCorrectOption" value="0" class="correct-radio" checked> Верный</label>
+                                    <button type="button" class="remove-option-btn">✖</button>
+                                </div>
+                            </div>
+                            <button type="button" id="addNewOptionBtn" class="btn-small">Добавить вариант</button>
+                        </div>
+                        <div id="imageUploadContainer">
+                            <label>Изображение (необязательно):</label>
+                            <input type="file" id="newImage" accept="image/jpeg,image/png,image/webp">
+                            <div id="imagePreview" style="display: none; margin-top: 10px;">
+                                <img id="previewImg" style="max-width: 200px; border-radius: 8px;">
+                                <button type="button" id="removeImageBtn" class="btn-small" style="background: var(--danger); margin-left: 10px;">✖ Удалить</button>
+                            </div>
+                        </div>
+                        <input type="number" id="newPoints" placeholder="Баллы" value="1">
+                        <button id="addQuestionBtn" class="btn">Добавить вопрос</button>
+                    </div>
+                    <h3>📋 Список вопросов</h3>
+                    <div id="questionsListContainer">Загрузка...</div>
+                </div>
             </div>
-            <h3>Список вопросов</h3>
-            <div id="questionsListContainer">Загрузка...</div>
         `;
 
         let optionCounter = 1;
-        const addNewOptionBtn = document.getElementById('addNewOptionBtn');
-        if (addNewOptionBtn) {
-            addNewOptionBtn.onclick = () => {
-                const container = document.getElementById('newOptionsList');
-                const newRow = document.createElement('div');
-                newRow.className = 'option-row';
-                newRow.innerHTML = `
-                    <input type="text" class="option-text" placeholder="Вариант ответа">
-                    <label><input type="radio" name="newCorrectOption" value="${optionCounter}" class="correct-radio"> Верный</label>
-                    <button type="button" class="remove-option-btn">✖</button>
+
+        document.getElementById('closeQuestionsEditor').onclick = () => {
+            document.getElementById('questionsEditor').style.display = 'none';
+            document.getElementById('tab-variants').style.display = 'block';
+        };
+
+        document.getElementById('addNewOptionBtn').onclick = () => {
+            const container = document.getElementById('newOptionsList');
+            const newRow = document.createElement('div');
+            newRow.className = 'option-row';
+            newRow.innerHTML = `
+                <input type="text" class="option-text" placeholder="Вариант ответа">
+                <label><input type="radio" name="newCorrectOption" value="${optionCounter}" class="correct-radio"> Верный</label>
+                <button type="button" class="remove-option-btn">✖</button>
+            `;
+            container.appendChild(newRow);
+            newRow.querySelector('.remove-option-btn').onclick = () => newRow.remove();
+            optionCounter++;
+        };
+
+        document.getElementById('newImage').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch('/api/upload', { method: 'POST', body: formData });
+                const data = await response.json();
+                currentImageUrl = data.imageUrl;
+                document.getElementById('previewImg').src = currentImageUrl;
+                document.getElementById('imagePreview').style.display = 'block';
+            } catch (err) {
+                alert('Ошибка загрузки изображения');
+            }
+        };
+
+        document.getElementById('removeImageBtn').onclick = () => {
+            currentImageUrl = null;
+            document.getElementById('imagePreview').style.display = 'none';
+            document.getElementById('previewImg').src = '';
+            document.getElementById('newImage').value = '';
+        };
+
+        document.getElementById('addQuestionBtn').onclick = async () => {
+            const question_text = document.getElementById('newQuestionText').value;
+            const points = parseInt(document.getElementById('newPoints').value);
+
+            if (!question_text) {
+                alert('Введите текст вопроса');
+                return;
+            }
+
+            const optionTexts = document.querySelectorAll('#newOptionsList .option-text');
+            const correctRadio = document.querySelector('input[name="newCorrectOption"]:checked');
+            const correctIndex = correctRadio ? parseInt(correctRadio.value) : 0;
+
+            const options = [];
+            optionTexts.forEach((opt, idx) => {
+                if (opt.value.trim()) {
+                    options.push({
+                        option_text: opt.value.trim(),
+                        is_correct: (idx === correctIndex)
+                    });
+                }
+            });
+
+            if (options.length < 2) {
+                alert('Добавьте минимум 2 варианта ответа');
+                return;
+            }
+
+            if (!currentVariantId) {
+                alert('Ошибка: вариант не выбран');
+                return;
+            }
+
+            const data = {
+                question_text: question_text,
+                points: points,
+                variant_id: parseInt(currentVariantId),
+                options: options,
+                image_url: currentImageUrl
+            };
+
+            try {
+                await postJSON('/api/questions', data);
+                document.getElementById('newQuestionText').value = '';
+                document.getElementById('newOptionsList').innerHTML = `
+                    <div class="option-row">
+                        <input type="text" class="option-text" placeholder="Вариант ответа">
+                        <label><input type="radio" name="newCorrectOption" value="0" class="correct-radio" checked> Верный</label>
+                        <button type="button" class="remove-option-btn">✖</button>
+                    </div>
                 `;
-                container.appendChild(newRow);
-                newRow.querySelector('.remove-option-btn').onclick = () => newRow.remove();
-                optionCounter++;
-            };
-        }
-
-        const addQuestionBtn = document.getElementById('addQuestionBtn');
-        if (addQuestionBtn) {
-            addQuestionBtn.onclick = async () => {
-                const question_text = document.getElementById('newQuestionText').value;
-                const points = parseInt(document.getElementById('newPoints').value);
-
-                if (!question_text) {
-                    alert('Введите текст вопроса');
-                    return;
-                }
-
-                const optionTexts = document.querySelectorAll('#newOptionsList .option-text');
-                const correctRadio = document.querySelector('input[name="newCorrectOption"]:checked');
-                const correctIndex = correctRadio ? parseInt(correctRadio.value) : 0;
-
-                const options = [];
-                optionTexts.forEach((opt, idx) => {
-                    if (opt.value.trim()) {
-                        options.push({
-                            option_text: opt.value.trim(),
-                            is_correct: (idx === correctIndex)
-                        });
-                    }
-                });
-
-                if (options.length < 2) {
-                    alert('Добавьте минимум 2 варианта ответа');
-                    return;
-                }
-
-                if (!currentVariantId) {
-                    alert('Ошибка: вариант не выбран');
-                    return;
-                }
-
-                const data = {
-                    question_text: question_text,
-                    points: points,
-                    variant_id: parseInt(currentVariantId),
-                    options: options
-                };
-
-                try {
-                    await postJSON('/api/questions', data);
-                    document.getElementById('newQuestionText').value = '';
-                    document.getElementById('newOptionsList').innerHTML = `
-                        <div class="option-row">
-                            <input type="text" class="option-text" placeholder="Вариант ответа">
-                            <label><input type="radio" name="newCorrectOption" value="0" class="correct-radio" checked> Верный</label>
-                            <button type="button" class="remove-option-btn">✖</button>
-                        </div>
-                    `;
-                    loadQuestionsList();
-                } catch (err) {
-                    alert('Ошибка: ' + err.message);
-                }
-            };
-        }
+                currentImageUrl = null;
+                document.getElementById('imagePreview').style.display = 'none';
+                document.getElementById('newImage').value = '';
+                loadQuestionsList();
+            } catch (err) {
+                alert('Ошибка: ' + err.message);
+            }
+        };
 
         const questionsContainer = document.getElementById('questionsListContainer');
         if (questionsContainer) {
@@ -192,18 +236,19 @@
                     return;
                 }
 
-                let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Текст вопроса</th><th>Баллы</th><th>Действия</th></tr></thead><tbody>';
+                let html = '<table class="admin-table"><thead><tr><th>ID</th><th>Текст вопроса</th><th>Изображение</th><th>Баллы</th><th>Действия</th></tr></thead><tbody>';
                 for (const q of questions) {
                     html += `
                         <tr>
                             <td>${q.id}</td>
                             <td>${escapeHtml(q.question_text)}</td>
+                            <td>${q.image_url ? '<span style="color: var(--success);">Есть</span>' : '—'}</td>
                             <td>${q.points}</td>
-                            <td><button class="delete-question-btn" data-id="${q.id}">🗑 Удалить</button></td>
+                            <td><button class="delete-question-btn" data-id="${q.id}">Удалить</button></td>
                         </tr>
                     `;
                 }
-                html += '</tbody></table>';
+                html += '</tbody><tr>';
                 questionsContainer.innerHTML = html;
 
                 document.querySelectorAll('.delete-question-btn').forEach(btn => {
@@ -220,14 +265,6 @@
             }
         }
     }
-
-    document.getElementById('closeQuestionsEditor')?.addEventListener('click', () => {
-        const editor = document.getElementById('questionsEditor');
-        if (editor) {
-            editor.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-    });
 
     if (document.getElementById('variantsTableBody')) {
         loadVariants();
