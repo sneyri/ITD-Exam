@@ -35,16 +35,23 @@
                 const variantTitle = r.variant_title || 'Без названия';
 
                 html += `
-                    <tr>
+                    <tr data-id="${r.id}" class="result-row">
                         <td>${escapeHtml(variantTitle)}</div>
-                        <td colspan="2" style="text-align: center; font-weight: 600;">${score} / ${maxScore}</td>
-                        <td>${formatDate(r.created_at)}</td>
+                        <td colspan="2" style="text-align: center; font-weight: 600;">${score} / ${maxScore}</div>
+                        <td>${formatDate(r.created_at)}</div>
                     </tr>
                 `;
             }
 
-            html += `</tbody></table>`;
+            html += `</tbody></div>`;
             container.innerHTML = html;
+
+            document.querySelectorAll('.result-row').forEach(row => {
+                row.addEventListener('click', () => {
+                    const attemptId = row.getAttribute('data-id');
+                    window.location.href = `/result-details?attempt_id=${attemptId}`;
+                });
+            });
         } catch (err) {
             showError(container, 'Ошибка загрузки результатов');
         }

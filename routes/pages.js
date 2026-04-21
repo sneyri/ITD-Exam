@@ -38,6 +38,8 @@ router.get('/logout', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/logout.html'));
 })
 
-
+router.get('/result-details', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/result-details.html'));
+})
 
 module.exports = router;
