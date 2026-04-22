@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
+const helmet = require('helmet');
 
 dotenv.config();
 
@@ -10,6 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 app.use('/uploads', express.static('public/uploads'));
+app.use(helmet());
 
 const questionsRoutes = require('./routes/questions');
 const variantsRoutes = require('./routes/variants');

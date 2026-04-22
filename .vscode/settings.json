@@ -10,7 +10,7 @@
         "**/Thumbs.db": true,
         "node_modules/**": true,
         "**/.cookies": true,
-        "**/.env": true,
+        //"**/.env": true,
         "**/package-lock.json": true,
         "**/package.json": true,
         "**/node_modules": true,
