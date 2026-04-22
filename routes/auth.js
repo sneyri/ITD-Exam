@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const pool = require('../db');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 
 router.post('/register', async (req, res) => {
     const { username, password } = req.body;
@@ -51,12 +52,19 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Неверный логин или пароль' });
         }
 
-        res.json({ 
-            user: { 
-                id: user.id, 
+        const token = jwt.sign(
+            { id: user.id, is_admin: user.is_admin },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.json({
+            token,
+            user: {
+                id: user.id,
                 username: user.username,
-                is_admin: user.is_admin 
-            } 
+                is_admin: user.is_admin
+            }
         });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -64,21 +72,24 @@ router.post('/login', async (req, res) => {
 });
 
 router.get('/me', async (req, res) => {
-    const userId = req.headers['user-id'];
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
     
-    if (!userId) {
-        return res.status(401).json({ error: 'Не авторизован' });
+    if (!token) {
+        return res.status(401).json({ error: 'Токен отсутствует' });
     }
 
     try {
-        const result = await pool.query('SELECT id, username, is_admin FROM users WHERE id = $1', [userId]);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+        const result = await pool.query('SELECT id, username, is_admin FROM users WHERE id = $1', [decoded.id]);
+        
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Пользователь не найден' });
         }
         res.json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(403).json({ error: 'Неверный или просроченный токен' });
     }
 });
-
 module.exports = router;

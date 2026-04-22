@@ -2002,3 +2002,29 @@ button.remove-admin:hover {
     transform: translateY(-1px);
     filter: brightness(0.95);
 }
+
+.proposal_input {
+    padding: 12px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.proposal_input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.proposal_input::placeholder {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.proposal_input:disabled {
+    background: var(--bg-secondary);
+    cursor: not-allowed;
+}
