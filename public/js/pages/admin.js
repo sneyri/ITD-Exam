@@ -22,6 +22,7 @@
             
             if (tabId === 'variants') window.loadVariants?.();
             if (tabId === 'users') window.loadUsers?.();
+            if (tabId === 'proposals') window.loadProposals?.();
         });
     });
 
