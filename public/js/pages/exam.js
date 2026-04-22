@@ -104,7 +104,7 @@
 
     closeModalBtn?.addEventListener('click', () => {
         modal.style.display = 'none';
-        window.location.href = '/variants.html';
+        window.location.href = '/answers';
     });
 
     if (variantId) {

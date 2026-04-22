@@ -1,3 +1,4 @@
 .cookies
 .env
 node_modules/
+public/uploads

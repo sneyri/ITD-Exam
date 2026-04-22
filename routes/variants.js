@@ -11,6 +11,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/admin', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM exam_variants ORDER BY id');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.get('/active', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM exam_variants WHERE is_active = true ORDER BY id');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.get('/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -19,6 +37,18 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Вариант не найден' });
         }
         res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.put('/:id/toggle', async (req, res) => {
+    const { id } = req.params;
+    const { is_active } = req.body;
+    
+    try {
+        await pool.query('UPDATE exam_variants SET is_active = $1 WHERE id = $2', [is_active, id]);
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

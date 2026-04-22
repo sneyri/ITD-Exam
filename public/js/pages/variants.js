@@ -10,7 +10,7 @@
         showLoading(container);
 
         try {
-            const variants = await getJSON('/api/variants');
+            const variants = await getJSON('/api/variants/active');
             let completed = [];
 
             if (userId) {
