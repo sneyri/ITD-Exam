@@ -17,12 +17,24 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-const isAdmin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-        next();
-    } else {
-        res.status(403).json({ message: 'У вас нет прав администратора.' });
+async function isAdmin(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) return res.status(401).json({ error: 'Нужен токен' });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        if (decoded.is_admin === true) {
+            req.user = decoded; 
+            next();
+        } else {
+            res.status(403).json({ error: 'У вас нет прав администратора' });
+        }
+    } catch (err) {
+        return res.status(403).json({ error: 'Токен невалиден или просрочен' });
     }
-};
+}
 
 module.exports = { verifyToken, isAdmin };
