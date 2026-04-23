@@ -2,7 +2,6 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const pool = require('../db');
 const router = express.Router();
-const jwt = require('jsonwebtoken');
 
 router.post('/register', async (req, res) => {
     const { username, password } = req.body;
@@ -52,14 +51,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Неверный логин или пароль' });
         }
 
-        const token = jwt.sign(
-            { id: user.id, is_admin: user.is_admin },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
-        );
-
         res.json({
-            token,
             user: {
                 id: user.id,
                 username: user.username,

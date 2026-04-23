@@ -1,30 +1,4 @@
 (function () {
-    async function checkAdminAccess() {
-        const token = localStorage.getItem('token');
-
-        if (!token) {
-            window.location.href = '/auth';
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/auth/me', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            const user = await response.json();
-
-            if (!user.is_admin) {
-                alert('Доступ только для администраторов!');
-                window.location.href = '/';
-            }
-        } catch (err) {
-            window.location.href = '/auth';
-        }
-    }
-
-    checkAdminAccess();
-
     const user = getUser();
 
     if (!user.isAdmin) {

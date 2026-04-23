@@ -20,7 +20,7 @@ function getUser() {
     return {
         id: localStorage.getItem('user_id'),
         username: localStorage.getItem('username'),
-        isAdmin: localStorage.getItem('is_admin') === 'true'
+        isAdmin: localStorage.getItem('XjkfluhdadfjOqiu') === 'true'
     };
 }
 
@@ -40,7 +40,7 @@ function requireAuth(redirectUrl = '/auth.html') {
 function logout() {
     localStorage.removeItem('user_id');
     localStorage.removeItem('username');
-    localStorage.removeItem('is_admin');
+    localStorage.removeItem('XjkfluhdadfjOqiu');
     window.location.href = '/';
 }
 

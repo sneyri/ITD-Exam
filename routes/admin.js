@@ -1,7 +1,6 @@
 const express = require('express');
 const pool = require('../db');
 const router = express.Router();
-const { verifyAdmin } = require('../middleware/auth');
 
 async function isAdmin(req, res, next) {
     const userId = req.headers['user-id'];
@@ -13,7 +12,7 @@ async function isAdmin(req, res, next) {
     next();
 }
 
-router.get('/users', verifyAdmin, async (req, res) => {
+router.get('/users', async (req, res) => {
     const { search } = req.query;
     let query = 'SELECT id, username, is_admin FROM users';
     const params = [];
@@ -34,19 +33,19 @@ router.get('/users', verifyAdmin, async (req, res) => {
     res.json(result.rows);
 });
 
-router.post('/users/:id/make-admin', verifyAdmin, async (req, res) => {
+router.post('/users/:id/make-admin', async (req, res) => {
     const { id } = req.params;
     await pool.query('UPDATE users SET is_admin = TRUE WHERE id = $1', [id]);
     res.json({ success: true });
 });
 
-router.post('/users/:id/remove-admin', verifyAdmin, async (req, res) => {
+router.post('/users/:id/remove-admin', async (req, res) => {
     const { id } = req.params;
     await pool.query('UPDATE users SET is_admin = FALSE WHERE id = $1', [id]);
     res.json({ success: true });
 });
 
-router.get('/check', verifyAdmin, async (req, res) => {
+router.get('/check', async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';

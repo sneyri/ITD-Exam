@@ -66,7 +66,7 @@
                 if (loginResponse.ok) {
                     localStorage.setItem('user_id', loginData.user.id);
                     localStorage.setItem('username', loginData.user.username);
-                    localStorage.setItem('is_admin', loginData.user.is_admin);
+                    localStorage.setItem('XjkfluhdadfjOqiu', loginData.user.is_admin);
                     window.location.href = '/';
                 } else {
                     successDiv.textContent = 'Регистрация успешна! Теперь войдите.';
@@ -107,7 +107,7 @@
             if (response.ok) {
                 localStorage.setItem('user_id', data.user.id);
                 localStorage.setItem('username', data.user.username);
-                localStorage.setItem('is_admin', data.user.is_admin);
+                localStorage.setItem('XjkfluhdadfjOqiu', data.user.is_admin);
                 window.location.href = '/';
             } else {
                 errorDiv.textContent = data.error;
