@@ -42,8 +42,4 @@ router.get('/result-details', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/result-details.html'));
 })
 
-router.get('/proposal', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/proposal.html'))
-})
-
 module.exports = router;
