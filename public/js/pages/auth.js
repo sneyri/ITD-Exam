@@ -1,119 +1,98 @@
-(function() {
-    const tabs = document.querySelectorAll('.auth-tab');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
+(function () {
+    const authForm = document.getElementById('auth-form');
+    const verificationDiv = document.getElementById('verification');
+    const usernameInput = document.getElementById('username-input');
+    const loginButton = document.getElementById('login-btn');
+    const accountDiv = document.getElementById('account');
+    const errorDiv = document.getElementById('login-error');
+    const returnButton = document.getElementById('return-to-auth');
+    const checkButton = document.getElementById('check-verification');
 
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
+    let foundProfile = null;
+    let currentUsername = '';
 
-            if (tab.dataset.tab === 'login') {
-                loginForm.classList.add('active');
-                registerForm.classList.remove('active');
-            } else {
-                registerForm.classList.add('active');
-                loginForm.classList.remove('active');
-            }
+    loginButton.addEventListener('click', async () => {
+        const username = usernameInput.value.trim();
+        errorDiv.innerHTML = '';
 
-            document.getElementById('login-error').textContent = '';
-            document.getElementById('register-error').textContent = '';
-            document.getElementById('register-success').textContent = '';
-        });
-    });
-
-    document.getElementById('register-btn').addEventListener('click', async () => {
-        const username = document.getElementById('register-username').value.trim();
-        const password = document.getElementById('register-password').value;
-        const confirm = document.getElementById('register-confirm').value;
-        const errorDiv = document.getElementById('register-error');
-        const successDiv = document.getElementById('register-success');
-
-        errorDiv.textContent = '';
-        successDiv.textContent = '';
-
-        if (!username || !password) {
-            errorDiv.textContent = 'Заполните все поля';
-            return;
-        }
-        if (password.length < 4) {
-            errorDiv.textContent = 'Пароль должен быть не менее 4 символов';
-            return;
-        }
-        if (password !== confirm) {
-            errorDiv.textContent = 'Пароли не совпадают';
+        if (!username) {
+            errorDiv.innerHTML = 'Введите никнейм';
             return;
         }
 
         try {
-            const response = await fetch('/api/auth/register', {
+            const response = await fetch('/api/auth/itd/check', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username })
             });
 
             const data = await response.json();
 
-            if (response.ok) {
-                const loginResponse = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
+            if (data.exists) {
+                foundProfile = data.data;
+                currentUsername = username
+
+                accountDiv.innerHTML = `
+                    <div">
+                        <p><strong>${escapeHtml(data.data.displayName) + escapeHtml(data.data.avatar)}</strong></p>
+                        <button id="submit-account">Это я (клянусь)</button>
+                    </div>
+                `;
+
+                document.getElementById('submit-account').addEventListener('click', async () => {
+                    authForm.style.display = 'none';
+                    verificationDiv.style.display = 'block';
+
+                    const generateCode = await fetch('/api/auth/itd/generateCode', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: data.data.username })
+                    });
+
+                    const code = await generateCode.json();
+
+                    const secretCodeLabel = document.getElementById('secret-code-label');
+                    secretCodeLabel.textContent = `СЕКРЕТНЫЙ КОД: ${code.verifCode}`;
                 });
-
-                const loginData = await loginResponse.json();
-
-                if (loginResponse.ok) {
-                    localStorage.setItem('user_id', loginData.user.id);
-                    localStorage.setItem('username', loginData.user.username);
-                    localStorage.setItem('XjkfluhdadfjOqiu', loginData.user.is_admin);
-                    window.location.href = '/';
-                } else {
-                    successDiv.textContent = 'Регистрация успешна! Теперь войдите.';
-                    document.getElementById('register-username').value = '';
-                    document.getElementById('register-password').value = '';
-                    document.getElementById('register-confirm').value = '';
-                    document.querySelector('.auth-tab[data-tab="login"]').click();
-                }
             } else {
-                errorDiv.textContent = data.error;
+                accountDiv.innerHTML = '';
+                errorDiv.innerHTML = 'Пользователь не найден';
             }
         } catch (err) {
-            errorDiv.textContent = 'Ошибка соединения с сервером';
+            errorDiv.innerHTML = 'Ошибка соединения с сервером';
         }
     });
 
-    document.getElementById('login-btn').addEventListener('click', async () => {
-        const username = document.getElementById('login-username').value.trim();
-        const password = document.getElementById('login-password').value;
-        const errorDiv = document.getElementById('login-error');
+    returnButton.addEventListener('click', () => {
+        authForm.style.display = 'block';
+        verificationDiv.style.display = 'none';
+    });
 
-        errorDiv.textContent = '';
-
-        if (!username || !password) {
-            errorDiv.textContent = 'Заполните все поля';
-            return;
-        }
+    checkButton.addEventListener('click', async () => {
+        checkButton.disabled = true;
+        checkButton.textContent = 'Проверка...';
 
         try {
-            const response = await fetch('/api/auth/login', {
+            const response = await fetch('/api/auth/itd/verify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
+                body: JSON.stringify({ username: currentUsername })
+            })
 
             const data = await response.json();
 
-            if (response.ok) {
-                localStorage.setItem('user_id', data.user.id);
-                localStorage.setItem('username', data.user.username);
-                localStorage.setItem('XjkfluhdadfjOqiu', data.user.is_admin);
+            if (data.verifed) {
                 window.location.href = '/';
-            } else {
-                errorDiv.textContent = data.error;
+            } else {    
+                document.getElementById('verification-error').innerHTML = data.message || 'Пост не найден'
+                checkButton.disabled = false;
+                checkButton.textContent = 'Я опубликовал(а) пост'
             }
         } catch (err) {
-            errorDiv.textContent = 'Ошибка соединения с сервером';
+            document.getElementById('verification-error').innerHTML = 'Ошибка проверки, попробуйте снова';
+            checkButton.disabled = false;
+            checkButton.textContent = 'Я опубликовал(а) пост';
         }
     });
 })();

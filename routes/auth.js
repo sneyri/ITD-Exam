@@ -1,87 +1,85 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
 const pool = require('../db');
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
-    const { username, password } = req.body;
+const dotenv = require('dotenv');
+dotenv.config();
 
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Заполните все поля' });
-    }
+const { ITDClient } = require('itd-sdk-js');
+const client = new ITDClient();
 
-    if (password.length < 4) {
-        return res.status(400).json({ error: 'Пароль должен быть не менее 4 символов' });
-    }
+router.post('/itd/generateCode', async (req, res) => {
+    const { username } = req.body;
 
+    const Letters = ['Жопа', 'НовкиПи', 'Попа)', 'ЫаИа', 'НуЩа', 'Мастика Лох'];
+    const radnomIndex = Math.floor(Math.random() * Letters.length);
+    let verificationCode = `${Letters[radnomIndex]}`;
+
+    await pool.query('DELETE FROM verification_codes WHERE username = $1', [username]);
+
+    await pool.query(
+        'INSERT INTO verification_codes (username, code, expires_at) VALUES ($1, $2, NOW() + INTERVAL \'10 minutes\')',
+        [username, verificationCode]
+    );
+
+    res.json({ verifCode: verificationCode });
+});
+
+router.post('/itd/verify', async (req, res) => {
     try {
-        const existing = await pool.query('SELECT id FROM users WHERE username = $1', [username]);
-        if (existing.rows.length > 0) {
-            return res.status(400).json({ error: 'Пользователь уже существует' });
-        }
+        const { username } = req.body;
 
-        const password_hash = await bcrypt.hash(password, 10);
         const result = await pool.query(
-            'INSERT INTO users (username, password_hash, is_admin) VALUES ($1, $2, $3) RETURNING id, username, is_admin',
-            [username, password_hash, false]
+            'SELECT code FROM verification_codes WHERE username = $1 AND expires_at > NOW()',
+            [username]
         );
 
-        res.status(201).json({ user: result.rows[0] });
+        if (result.rows.length === 0) {
+            return res.json({ verifed: false, message: 'Код истек или не найден' });
+        }
+
+        const code = result.rows[0].code;
+
+        const post = await client.getUserLatestPost(username, 10);
+        console.log('ПОСТ: ', post);
+
+        let found = false;
+        if (post.content?.includes(code)) {
+            console.log(post);
+            if (post.author.username == username) {
+                found = true;
+            }
+        }
+
+        if (found) {
+            await pool.query('DELETE FROM verification_codes WHERE username = $1', [username]);
+            res.json({ verifed: true });
+        } else {
+            res.json({ verifed: false, message: 'Пост с кодом не найден' });
+        }
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('Ошибка:', err);
+        res.status(500).json({ verifed: false, message: err.message });
     }
 });
 
-router.post('/login', async (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Заполните все поля' });
-    }
+router.post('/itd/check', async (req, res) => {
+    const { username } = req.body;
 
     try {
-        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
-        if (result.rows.length === 0) {
-            return res.status(401).json({ error: 'Неверный логин или пароль' });
-        }
+        const userData = await client.getUserProfile(username);
 
-        const user = result.rows[0];
-        const valid = await bcrypt.compare(password, user.password_hash);
-        if (!valid) {
-            return res.status(401).json({ error: 'Неверный логин или пароль' });
+        if (!userData?.username || !userData?.avatar) {
+            return res.json({ exists: false });
         }
 
         res.json({
-            user: {
-                id: user.id,
-                username: user.username,
-                is_admin: user.is_admin
-            }
+            exists: true,
+            data: userData,
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.json({ exists: false });
     }
 });
 
-router.get('/me', async (req, res) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Токен отсутствует' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-        const result = await pool.query('SELECT id, username, is_admin FROM users WHERE id = $1', [decoded.id]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Пользователь не найден' });
-        }
-        res.json(result.rows[0]);
-    } catch (err) {
-        res.status(403).json({ error: 'Неверный или просроченный токен' });
-    }
-});
 module.exports = router;

@@ -1,12 +1,4 @@
 (function () {
-    const user = getUser();
-
-    if (!user.isAdmin) {
-        alert('Доступ запрещён');
-        window.location.href = '/';
-        return;
-    }
-
     document.getElementById('adminUserInfo').innerHTML = `${escapeHtml(user.username)} <a href="/logout.html">Выйти</a>`;
 
     const tabs = document.querySelectorAll('.tab');
@@ -22,7 +14,6 @@
 
             if (tabId === 'variants') window.loadVariants?.();
             if (tabId === 'users') window.loadUsers?.();
-            if (tabId === 'proposals') window.loadProposals?.();
         });
     });
 

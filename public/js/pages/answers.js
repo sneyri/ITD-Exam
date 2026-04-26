@@ -1,8 +1,4 @@
 (function () {
-    if (!requireAuth()) return;
-
-    const userId = getUser().id;
-
     async function loadResults() {
         const container = document.getElementById('resultsContainer');
         if (!container) return;
@@ -10,7 +6,7 @@
         showLoading(container);
 
         try {
-            const results = await getJSON(`/api/exam/my-results?user_id=${userId}`);
+            const results = await getJSON(`/api/exam/my-results?user_id=${1}`);
 
             if (results.length === 0) {
                 container.innerHTML = '<div class="no-results">У вас пока нет результатов. Пройдите экзамен.</div>';

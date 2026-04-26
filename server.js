@@ -24,9 +24,9 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/questions', questionsRoutes);
 app.use('/api/variants', variantsRoutes);
 app.use('/api/exam', examRoutes);
-app.use('/', pagesRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/', pagesRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {}); 

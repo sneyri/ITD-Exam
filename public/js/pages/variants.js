@@ -1,8 +1,4 @@
 (function() {
-    if (!requireAuth()) return;
-
-    const userId = getUser().id;
-
     async function loadVariants() {
         const container = document.getElementById('variantsList');
         if (!container) return;

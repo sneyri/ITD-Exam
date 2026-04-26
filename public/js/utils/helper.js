@@ -16,34 +16,6 @@ function formatDateShort(dateString) {
     return `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} в ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
 }
 
-function getUser() {
-    return {
-        id: localStorage.getItem('user_id'),
-        username: localStorage.getItem('username'),
-        isAdmin: localStorage.getItem('XjkfluhdadfjOqiu') === 'true'
-    };
-}
-
-function isAuthenticated() {
-    return !!localStorage.getItem('user_id');
-}
-
-function requireAuth(redirectUrl = '/auth.html') {
-    if (!isAuthenticated()) {
-        alert('Пожалуйста, войдите в аккаунт');
-        window.location.href = redirectUrl;
-        return false;
-    }
-    return true;
-}
-
-function logout() {
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('username');
-    localStorage.removeItem('XjkfluhdadfjOqiu');
-    window.location.href = '/';
-}
-
 async function fetchWithAuth(url, options = {}) {
     const userId = localStorage.getItem('user_id');
     const headers = {
@@ -122,10 +94,6 @@ window.helpers = {
     escapeHtml,
     formatDate,
     formatDateShort,
-    getUser,
-    isAuthenticated,
-    requireAuth,
-    logout,
     fetchWithAuth,
     getJSON,
     postJSON,

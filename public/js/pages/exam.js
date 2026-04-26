@@ -1,6 +1,4 @@
 (function () {
-    if (!requireAuth()) return;
-
     const userId = getUser().id;
     const urlParams = new URLSearchParams(window.location.search);
     const variantId = urlParams.get('variant_id');
