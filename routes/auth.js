@@ -13,7 +13,7 @@ const client = new ITDClient();
 router.post('/itd/generateCode', async (req, res) => {
     const { username } = req.body;
 
-    const Letters = ['иду сдавать егэ по итд', 'пожелайте удачи на егэ по итд', 'мама сказала что не пустит домой если не сдам егэ по итд', 'Егэ по ИТД!'];
+    const Letters = [')'];
     const radnomIndex = Math.floor(Math.random() * Letters.length);
     let verificationCode = `${Letters[radnomIndex]}`;
 
