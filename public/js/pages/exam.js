@@ -1,5 +1,4 @@
 (function () {
-    const userId = getUser().id;
     const urlParams = new URLSearchParams(window.location.search);
     const variantId = urlParams.get('variant_id');
 
@@ -27,13 +26,12 @@
                 html += `
                     <div class="question-block" data-question-id="${q.id}">
                         <p><strong>${i + 1}. ${escapeHtml(q.question_text)}</strong></p>
-                        ${q.image_url ? `<img src="${q.image_url}" class="question-image" alt="Изображение к вопросу">` : ''}
+                        ${q.image_url ? `<img src="${q.image_url}" class="question-image" alt="Изображение">` : ''}
                         <div class="options-list">
                 `;
 
                 if (q.options && q.options.length > 0) {
-                    for (let j = 0; j < q.options.length; j++) {
-                        const opt = q.options[j];
+                    for (const opt of q.options) {
                         html += `
                             <label class="option-label">
                                 <input type="radio" name="q${q.id}" value="${opt.id}" data-question="${q.id}" data-option="${opt.id}">
@@ -66,8 +64,7 @@
     async function submitExam() {
         const answers = {};
 
-        const radioInputs = document.querySelectorAll('input[type="radio"]:checked');
-        radioInputs.forEach(input => {
+        document.querySelectorAll('input[type="radio"]:checked').forEach(input => {
             const questionId = input.getAttribute('data-question');
             const optionId = input.getAttribute('data-option');
             answers[questionId] = optionId;
@@ -83,15 +80,12 @@
 
         try {
             const result = await postJSON('/api/exam/submit', {
-                user_id: userId,
                 variant_id: variantId,
                 answers: answers
             });
 
-            if (result) {
-                document.getElementById('result-score').textContent = `${result.score} / ${result.maxScore}`;
-                modal.style.display = 'flex';
-            }
+            document.getElementById('result-score').textContent = `${result.score} / ${result.maxScore}`;
+            modal.style.display = 'flex';
         } catch (err) {
             alert('Ошибка при отправке: ' + err.message);
         } finally {

@@ -10,60 +10,47 @@ function formatDate(dateString) {
     return new Date(dateString).toLocaleString();
 }
 
-function formatDateShort(dateString) {
-    if (!dateString) return '—';
-    const date = new Date(dateString);
-    return `${date.getDate().toString().padStart(2, '0')}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getFullYear()} в ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-}
-
-async function fetchWithAuth(url, options = {}) {
-    const userId = localStorage.getItem('user_id');
-    const headers = {
-        'Content-Type': 'application/json',
-        ...options.headers
-    };
-    
-    if (userId) {
-        headers['user-id'] = userId;
-    }
-    
-    const response = await fetch(url, {
-        ...options,
-        headers
-    });
-    
-    return response;
-}
-
 async function getJSON(url) {
-    const response = await fetchWithAuth(url);
+    const response = await fetch(url);
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }));
+        throw new Error(error.error || 'Ошибка запроса');
+    }
     return response.json();
 }
 
 async function postJSON(url, data) {
-    const response = await fetchWithAuth(url, {
+    const response = await fetch(url, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
-    
     if (!response.ok) {
-        const error = await response.json();
+        const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }));
         throw new Error(error.error || 'Ошибка запроса');
     }
-    
     return response.json();
 }
 
 async function putJSON(url, data) {
-    const response = await fetchWithAuth(url, {
+    const response = await fetch(url, {
         method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     });
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }));
+        throw new Error(error.error || 'Ошибка запроса');
+    }
     return response.json();
 }
 
 async function deleteRequest(url) {
-    const response = await fetchWithAuth(url, { method: 'DELETE' });
+    const response = await fetch(url, { method: 'DELETE' });
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }));
+        throw new Error(error.error || 'Ошибка запроса');
+    }
     return response.json();
 }
 
@@ -78,28 +65,3 @@ function showError(element, message) {
         element.innerHTML = `<div class="error-message">❌ ${escapeHtml(message)}</div>`;
     }
 }
-
-function showSuccess(element, message) {
-    if (element) {
-        element.innerHTML = `<div class="success-message">✅ ${escapeHtml(message)}</div>`;
-        setTimeout(() => {
-            if (element.innerHTML.includes(message)) {
-                element.innerHTML = '';
-            }
-        }, 3000);
-    }
-}
-
-window.helpers = {
-    escapeHtml,
-    formatDate,
-    formatDateShort,
-    fetchWithAuth,
-    getJSON,
-    postJSON,
-    putJSON,
-    deleteRequest,
-    showLoading,
-    showError,
-    showSuccess
-};

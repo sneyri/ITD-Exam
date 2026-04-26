@@ -10,13 +10,11 @@
     <div class="container">
         <div class="header">
             <h1>Админ панель</h1>
-            <div id="adminUserInfo" class="user-greeting"></div>
         </div>
 
         <div class="admin-container">
             <aside class="admin-sidebar">
                 <button class="tab active" data-tab="variants">Варианты</button>
-                <button class="tab" data-tab="users">Пользователи</button>
             </aside>
 
             <main class="admin-content">
@@ -34,35 +32,20 @@
                             </tr>
                         </thead>
                         <tbody id="variantsTableBody">
-                            <tr>
-                                <td colspan="2">Загрузка...</td>
-                            </tr>
+                            <tr><td colspan="2">Загрузка...</td></tr>
                         </tbody>
                     </table>
-                </div>
-
-                <div id="tab-users" class="tab-content">
-                    <h2>Управление пользователями</h2>
-                    <div id="usersList">Загрузка...</div>
-                </div>
-
-                <div id="tab-proposals" class="tab-content">
-                    <h2>Предложка</h2>
-                    <div id="proposalsList">Загрузка...</div>
                 </div>
             </main>
         </div>
 
         <div id="questionsEditor" style="display: none;">
-            <div class="modal-overlay"></div>
             <div class="modal-container">
                 <div class="modal-header">
                     <h3 id="questionsEditorTitle">Вопросы варианта</h3>
                     <button id="closeQuestionsEditor" class="close-btn">&times;</button>
                 </div>
-                <div class="modal-body" id="questionsEditorList">
-                    Загрузка...
-                </div>
+                <div class="modal-body" id="questionsEditorList">Загрузка...</div>
             </div>
         </div>
 
@@ -74,8 +57,8 @@
     </div>
 
     <script src="/js/utils/helper.js"></script>
+    <script src="js/utils/auth-check.js"></script>
     <script src="/js/pages/admin.js"></script>
     <script src="/js/pages/admin-variants.js"></script>
-    <script src="/js/pages/admin-users.js"></script>
 </body>
 </html>

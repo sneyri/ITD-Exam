@@ -1,11 +1,10 @@
 (function () {
-    if (!requireAuth()) return;
-
     const urlParams = new URLSearchParams(window.location.search);
     const attemptId = urlParams.get('attempt_id');
 
     if (!attemptId) {
-        document.getElementById('questionsContainer').innerHTML = '<p class="error-message">Ошибка: результат не выбран</p>';
+        document.getElementById('questionsContainer').innerHTML = 
+            '<p class="error-message">Ошибка: результат не выбран</p>';
         return;
     }
 
@@ -23,14 +22,13 @@
             `;
 
             let html = '';
-            for (let i = 0; i < data.answers.length; i++) {
-                const ans = data.answers[i];
+            for (const ans of data.answers) {
                 const isCorrect = ans.is_correct === true;
                 const blockClass = isCorrect ? 'correct' : 'incorrect';
 
                 html += `
                     <div class="question-block ${blockClass}">
-                        <p><strong>${i + 1}. ${escapeHtml(ans.question_text)}</strong>
+                        <p><strong>${escapeHtml(ans.question_text)}</strong>
                             <span class="result-badge ${isCorrect ? 'correct' : 'incorrect'}">
                                 ${isCorrect ? '✓ Верно' : '✗ Неверно'}
                             </span>
@@ -45,21 +43,16 @@
             questionsContainer.innerHTML = html;
             
             const percent = (data.result.score / data.result.max_score) * 100;
-            let imageName = '';
-
+            let imageName = 'WORST';
             if (percent >= 75) imageName = 'BEST';
             else if (percent >= 50) imageName = 'GOOD';
             else if (percent >= 25) imageName = 'BAD';
-            else imageName = 'WORST';
 
-            const imgHtml = `
+            questionsContainer.insertAdjacentHTML('beforeend', `
                 <div style="text-align: center; margin-top: 30px;">
                     <img class="result-image" src="/assets/${imageName}.jpg" alt="${imageName}">
                 </div>
-            `;
-
-            questionsContainer.insertAdjacentHTML('beforeend', imgHtml);
-
+            `);
         } catch (err) {
             console.error(err);
             questionsContainer.innerHTML = '<p class="error-message">Ошибка загрузки деталей</p>';

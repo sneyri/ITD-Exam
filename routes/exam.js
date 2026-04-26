@@ -1,22 +1,17 @@
 const express = require('express');
 const pool = require('../db');
 const router = express.Router();
+const { requireAuth } = require('./middleware');
 
-router.get('/my-results', async (req, res) => {
-    const { user_id } = req.query;
-
-    if (!user_id) {
-        return res.status(400).json({ error: 'user_id обязателен' });
-    }
-
+router.get('/my-results', requireAuth, async (req, res) => {
     try {
         const results = await pool.query(`
             SELECT er.*, ev.title as variant_title
             FROM exam_results er
             LEFT JOIN exam_variants ev ON er.variant_id = ev.id
-            WHERE er.user_id = $1 
+            WHERE er.user_name = $1 
             ORDER BY er.created_at DESC
-        `, [user_id]);
+        `, [req.username]);
 
         res.json(results.rows);
     } catch (err) {
@@ -24,17 +19,11 @@ router.get('/my-results', async (req, res) => {
     }
 });
 
-router.get('/completed-variants', async (req, res) => {
-    const { user_id } = req.query;
-
-    if (!user_id) {
-        return res.status(400).json({ error: 'user_id обязателен' });
-    }
-
+router.get('/completed-variants', requireAuth, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT DISTINCT variant_id FROM exam_results WHERE user_id = $1',
-            [user_id]
+            'SELECT DISTINCT variant_id FROM exam_results WHERE user_name = $1',
+            [req.username]
         );
         res.json(result.rows.map(row => row.variant_id));
     } catch (err) {
@@ -42,16 +31,17 @@ router.get('/completed-variants', async (req, res) => {
     }
 });
 
-router.post('/submit', async (req, res) => {
-    const { user_id, variant_id, answers } = req.body;
+router.post('/submit', requireAuth, async (req, res) => {
+    const { variant_id, answers } = req.body;
+    const username = req.username;
 
-    if (!user_id || !variant_id || !answers) {
+    if (!variant_id || !answers) {
         return res.status(400).json({ error: 'Не хватает данных' });
     }
 
     const existing = await pool.query(
-        'SELECT id FROM exam_results WHERE user_id = $1 AND variant_id = $2',
-        [user_id, variant_id]
+        'SELECT id FROM exam_results WHERE user_name = $1 AND variant_id = $2',
+        [username, variant_id]
     );
 
     if (existing.rows.length > 0) {
@@ -59,9 +49,6 @@ router.post('/submit', async (req, res) => {
     }
 
     try {
-        const userRes = await pool.query('SELECT username FROM users WHERE id = $1', [user_id]);
-        const username = userRes.rows[0]?.username || 'Аноним';
-
         const questionsRes = await pool.query(`
             SELECT q.id, q.points, qo.id as correct_option_id
             FROM questions q
@@ -70,7 +57,6 @@ router.post('/submit', async (req, res) => {
         `, [variant_id]);
 
         const questions = questionsRes.rows;
-
         let totalScore = 0;
         let maxScore = 0;
 
@@ -83,8 +69,8 @@ router.post('/submit', async (req, res) => {
         }
 
         const resultRes = await pool.query(
-            'INSERT INTO exam_results (user_name, variant_id, score, max_score, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING id',
-            [username, variant_id, totalScore, maxScore, user_id]
+            'INSERT INTO exam_results (user_name, variant_id, score, max_score) VALUES ($1, $2, $3, $4) RETURNING id',
+            [username, variant_id, totalScore, maxScore]
         );
 
         const resultId = resultRes.rows[0].id;

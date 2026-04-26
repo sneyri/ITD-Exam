@@ -35,7 +35,7 @@
 
                 accountDiv.innerHTML = `
                     <div">
-                        <p><strong>${escapeHtml(data.data.displayName) + escapeHtml(data.data.avatar)}</strong></p>
+                        <h2><strong>${escapeHtml(data.data.displayName) + escapeHtml(data.data.avatar)}</strong></h2>
                         <button id="submit-account">Это я (клянусь)</button>
                     </div>
                 `;

@@ -1,6 +1,8 @@
 const express = require('express');
 const pool = require('../db');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
+
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -11,7 +13,7 @@ const client = new ITDClient();
 router.post('/itd/generateCode', async (req, res) => {
     const { username } = req.body;
 
-    const Letters = ['Жопа', 'НовкиПи', 'Попа)', 'ЫаИа', 'НуЩа', 'Мастика Лох'];
+    const Letters = ['Жопа', 'НовкиПи', 'Попа)', 'ЫаИа', 'НуЩа', 'Мастика Лох', 'Гидрант', 'Мезинчик'];
     const radnomIndex = Math.floor(Math.random() * Letters.length);
     let verificationCode = `${Letters[radnomIndex]}`;
 
@@ -41,18 +43,33 @@ router.post('/itd/verify', async (req, res) => {
         const code = result.rows[0].code;
 
         const post = await client.getUserLatestPost(username, 10);
-        console.log('ПОСТ: ', post);
 
         let found = false;
-        if (post.content?.includes(code)) {
-            console.log(post);
-            if (post.author.username == username) {
-                found = true;
-            }
+
+        if (post?.content?.includes(code)) {
+            found = true;
+        }
+
+        if (!found && post?.originalPost?.content?.includes(code)) {
+            found = true;
         }
 
         if (found) {
             await pool.query('DELETE FROM verification_codes WHERE username = $1', [username]);
+
+            const token = jwt.sign(
+                { username: username },
+                process.env.JWT_SECRET,
+                { expiresIn: '24h' }
+            );
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: 'strict',
+                maxAge: 24 * 60 * 60 * 1000
+            });
+
             res.json({ verifed: true });
         } else {
             res.json({ verifed: false, message: 'Пост с кодом не найден' });
@@ -81,5 +98,17 @@ router.post('/itd/check', async (req, res) => {
         res.json({ exists: false });
     }
 });
+
+router.get('/me', async (req, res) => {
+    const token = req.cookies?.token;
+    if (!token) return res.status(401).json({ error: 'Не авторизован' });
+    
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        res.json({ username: decoded.username });
+    } catch (err) {
+        res.status(401).json({ error: 'Токен недействителен' });
+    }
+});     
 
 module.exports = router;
