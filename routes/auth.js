@@ -3,10 +3,6 @@ const pool = require('../db');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 
-
-const dotenv = require('dotenv');
-dotenv.config();
-
 const { ITDClient } = require('itd-sdk-js');
 const client = new ITDClient();
 
@@ -65,7 +61,7 @@ router.post('/itd/verify', async (req, res) => {
 
             res.cookie('token', token, {
                 httpOnly: true,
-                secure: false,
+                secure: true,
                 sameSite: 'strict',
                 maxAge: 24 * 60 * 60 * 1000
             });
