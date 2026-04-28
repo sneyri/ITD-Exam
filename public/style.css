@@ -2253,3 +2253,166 @@ button {
 #submit-account:active {
     transform: translateY(0);
 }
+
+#auth-form {
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--accent);
+    text-align: center;
+}
+
+#auth-form h2 {
+    margin-bottom: 0.5rem;
+}
+
+#auth-form p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+#username-input {
+    margin-bottom: 1rem;
+}
+
+#account {
+    margin-top: 1rem;
+}
+
+#verification {
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--warning);
+    text-align: center;
+}
+
+#secret-code-label {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: monospace;
+    color: var(--accent);
+    margin: 1.5rem 0;
+    letter-spacing: 2px;
+}
+
+#password {
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border-left: 4px solid var(--success);
+    text-align: center;
+}
+
+#password-input,
+#new-password {
+    margin-bottom: 1rem;
+}
+
+#return-to-auth,
+#return-from-password {
+    margin-top: 1rem;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    text-decoration: underline;
+}
+
+#return-to-auth:hover,
+#return-from-password:hover {
+    color: var(--text-primary);
+}
+
+#login-error,
+#verification-error,
+#password-error,
+#reg-error {
+    margin-top: 0.75rem;
+}
+
+#login-btn,
+#submit-account,
+#check-verification,
+#login-submit,
+#finish-registration {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+#login-btn,
+#submit-account,
+#check-verification,
+#login-submit,
+#finish-registration {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+#login-btn:hover,
+#submit-account:hover,
+#check-verification:hover,
+#login-submit:hover,
+#finish-registration:hover {
+    background: var(--accent-dark);
+}
+
+#login-btn:disabled,
+#submit-account:disabled,
+#check-verification:disabled,
+#login-submit:disabled,
+#finish-registration:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#return-to-auth,
+#return-from-password {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+    background: transparent;
+    color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+#return-to-auth:hover,
+#return-from-password:hover {
+    color: var(--text-primary);
+}
+
+#password-input,
+#new-password {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.95rem;
+    border: 1px solid var(--border-main);
+    border-radius: var(--radius-md);
+    margin-bottom: 0.5rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+#password-input:focus,
+#new-password:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,110,247,0.1);
+}

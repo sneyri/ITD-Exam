@@ -12,20 +12,13 @@ const app = express();
 app.use(helmet());
 app.disable('x-powered-by');
 
-const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 60,
-    message: { error: 'Слишком много запросов. Попробуйте позже.' }
-});
-
 const authLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     max: 10,
     message: { error: 'Слишком много попыток. Подождите минуту.' }
 });
 
-app.use('/api/', limiter);
-app.use('/api/auth', authLimiter);
+//app.use('/api/auth', authLimiter);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

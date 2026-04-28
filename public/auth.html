@@ -14,7 +14,7 @@
             <h2>Вход в аккаунт</h2>
             <p>Введите ваш никнейм из ИТД</p>
             <input type="text" id="username-input" placeholder="Ваш никнейм" autocomplete="off">
-            <button id="login-btn" class="btn">Проверить</button>
+            <button id="login-btn" class="btn">Найти</button>
             <div id="account"></div>
             <div id="login-error" class="error-message"></div>
         </div>
@@ -23,10 +23,19 @@
             <h2>Подтверждение аккаунта</h2>
             <p>Опубликуйте пост на ИТД с этим кодом:</p>
             <div id="secret-code-label">Загрузка...</div>
-            <p>Важно! Проверяется ваш последний пост. Убедитесь, что пост с кодом — последний.</p>
+            <p>Важно! Проверяется ваш последний пост. Убедитесь, что пост с кодом — последний. После проверки пост можно удалить.</p>
             <button id="check-verification" class="btn btn-success">Я опубликовал(а) пост</button>
             <button id="return-to-auth" class="btn">← Назад</button>
             <div id="verification-error" class="error-message"></div>
+        </div>
+
+        <div id="password" style="display: none;">
+            <h2>Введите пароль</h2>
+            <p>Введите пароль вы ввели при регистрации</p>
+            <input type="password" id="password-input" placeholder="Пароль">
+            <button id="login-submit">Войти</button>
+            <button id="return-from-password">Назад</button>
+            <div id="password-error" class="error-message"></div>
         </div>
     </div>
 
