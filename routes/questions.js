@@ -89,10 +89,8 @@ router.put('/:id', async (req, res) => {
             [question_text, points || 1, variant_id, id]
         );
         
-        // Удаляем старые варианты
         await client.query('DELETE FROM question_options WHERE question_id = $1', [id]);
         
-        // Добавляем новые
         if (options && options.length > 0) {
             for (let i = 0; i < options.length; i++) {
                 await client.query(

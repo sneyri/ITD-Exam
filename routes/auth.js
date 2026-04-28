@@ -122,33 +122,46 @@ router.post('/itd/register', async (req, res) => {
 });
 
 router.post('/itd/login', async (req, res) => {
-    const { username, password } = req.body;
+    try {
+        const { username, password } = req.body;
 
-    const user = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+        if (!username || !password) {
+            return res.status(400).json({ success: false, message: 'Заполните все поля' });
+        }
 
-    if (user.rows.length === 0) {
-        return res.json({ success: false, message: 'Пользователь не найден' });
+        const user = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (user.rows.length === 0) {
+            return res.json({ success: false, message: 'Пользователь не найден' });
+        }
+
+        if (!user.rows[0].password_hash) {
+            return res.json({ success: false, message: 'Пароль не установлен. Пройдите регистрацию заново.' });
+        }
+
+        const valid = await bcrypt.compare(password, user.rows[0].password_hash);
+
+        if (!valid) {
+            return res.json({ success: false, message: 'Неверный пароль' });
+        }
+
+        const token = jwt.sign(
+            { username },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        });
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Ошибка в /itd/login:', err);
+        res.status(500).json({ success: false, message: 'Ошибка сервера. Попробуйте позже.' });
     }
-
-    const valid = await bcrypt.compare(password, user.rows[0].password_hash);
-
-    if (!valid) {
-        return res.json({ success: false, message: 'Неверный пароль' });
-    }
-
-    const token = jwt.sign(
-        { username },
-        process.env.JWT_SECRET,
-        { expiresIn: '24h' }
-    );
-
-    res.cookie('token', token, {
-        httpOnly: true,
-        sameSite: 'lax',
-        maxAge: 24 * 60 * 60 * 1000
-    });
-
-    res.json({ success: true });
 });
 
 router.get('/me', async (req, res) => {

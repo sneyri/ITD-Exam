@@ -65,3 +65,37 @@ function showError(element, message) {
         element.innerHTML = `<div class="error-message">❌ ${escapeHtml(message)}</div>`;
     }
 }
+
+async function getJSON(url) {
+    const response = await fetch(url);
+    
+    if (response.status === 429) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Слишком много запросов');
+    }
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }));
+        throw new Error(error.error || 'Ошибка запроса');
+    }
+    return response.json();
+}
+
+async function postJSON(url, data) {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+    
+    if (response.status === 429) {
+        const error = await response.json().catch(() => ({}));
+        throw new Error(error.error || 'Слишком много запросов');
+    }
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }));
+        throw new Error(error.error || 'Ошибка запроса');
+    }
+    return response.json();
+}
