@@ -60,7 +60,7 @@
             };
 
         } catch (err) {
-            errorDiv.innerHTML = 'Ошибка соединения с сервером';
+            errorDiv.innerHTML = `Ошибка сервера: ${err.message}`;
         }
     });
 
@@ -125,7 +125,7 @@
                 <input type="password" id="new-password" placeholder="Пароль">
                 <button id="finish-registration">Завершить регистрацию</button>
                 <div id="reg-error" class="error-message"></div>
-            `;
+                `;
 
                 document.getElementById('finish-registration').onclick = async () => {
                     const password = document.getElementById('new-password').value;
