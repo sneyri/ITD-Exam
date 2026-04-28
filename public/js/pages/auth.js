@@ -12,12 +12,17 @@
     const loginSubmit = document.getElementById('login-submit');
     const returnFromPassword = document.getElementById('return-from-password');
     const passwordError = document.getElementById('password-error');
-    const verificationError = document.getElementById('verification-error');
 
     let currentUsername = '';
 
     loginButton.addEventListener('click', async () => {
         const username = usernameInput.value.trim();
+        if (usernameInput.value.trim() === currentUsername) return;
+        
+        loginButton.textContent = 'Проверяю...';
+        loginButton.disabled = true;
+        
+
         errorDiv.innerHTML = '';
         accountDiv.innerHTML = '';
 
@@ -26,13 +31,20 @@
             return;
         }
 
-        if (username === currentUsername) return;
-
-        loginButton.textContent = 'Проверяю...';
-        loginButton.disabled = true;
-
         try {
-            const data = await postJSON('/api/auth/itd/check', { username });
+            const response = await fetch('/api/auth/itd/check', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+
+            if (response.status === 429) {
+                const errorData = await response.json();
+                errorDiv.innerHTML = errorData.error || 'Слишком много запросов';
+                return;
+            }
+
+            const data = await response.json();
 
             if (!data.exists) {
                 errorDiv.innerHTML = 'Пользователь не найден в ИТД';
@@ -64,7 +76,7 @@
             };
 
         } catch (err) {
-            errorDiv.innerHTML = err.message;
+            errorDiv.innerHTML = `Ошибка сервера: ${err.message}`;
         } finally {
             loginButton.textContent = 'Найти';
             loginButton.disabled = false;
@@ -74,95 +86,90 @@
     async function startVerification(username) {
         authForm.style.display = 'none';
         verificationDiv.style.display = 'block';
-        verificationError.innerHTML = '';
 
         try {
-            const data = await postJSON('/api/auth/itd/generateCode', { username });
+            const response = await fetch('/api/auth/itd/generateCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username })
+            });
+
+            const data = await response.json();
 
             if (data.error) {
-                verificationError.innerHTML = data.message;
+                document.getElementById('verification-error').innerHTML = data.message;
                 return;
             }
 
             document.getElementById('secret-code-label').textContent = data.verifCode;
         } catch (err) {
-            verificationError.innerHTML = err.message;
+            document.getElementById('verification-error').innerHTML = 'Ошибка генерации кода';
         }
     }
-
     loginSubmit.addEventListener('click', async () => {
         const password = passwordInput.value;
-        passwordError.innerHTML = '';
 
-        if (!password) {
-            passwordError.innerHTML = 'Введите пароль';
-            return;
-        }
+        const response = await fetch('/api/auth/itd/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: currentUsername, password })
+        });
 
-        loginSubmit.disabled = true;
-        loginSubmit.textContent = 'Входим...';
+        const data = await response.json();
 
-        try {
-            const data = await postJSON('/api/auth/itd/login', { username: currentUsername, password });
-
-            if (data.success) {
-                window.location.href = '/';
-            } else {
-                passwordError.innerHTML = data.message || 'Неверный пароль';
-            }
-        } catch (err) {
-            passwordError.innerHTML = err.message;
-        } finally {
-            loginSubmit.disabled = false;
-            loginSubmit.textContent = 'Войти';
+        if (data.success) {
+            window.location.href = '/';
+        } else {
+            passwordError.innerHTML = data.message || 'Неверный пароль';
         }
     });
 
     checkButton.addEventListener('click', async () => {
         checkButton.disabled = true;
         checkButton.textContent = 'Проверка...';
-        verificationError.innerHTML = '';
 
         try {
-            const data = await postJSON('/api/auth/itd/verify', { username: currentUsername });
+            const response = await fetch('/api/auth/itd/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUsername })
+            });
+
+            const data = await response.json();
 
             if (data.verifed) {
                 verificationDiv.innerHTML = `
-                    <h2>Придумайте пароль</h2>
-                    <p>Важно! Через этот пароль вы будете входить в аккаунт. Не показывайте его никому и не забудьте.</p>
-                    <input type="password" id="new-password" placeholder="Пароль (мин. 4 символа)">
-                    <button id="finish-registration">Завершить регистрацию</button>
-                    <div id="reg-error" class="error-message"></div>
+                <h2>Придумайте пароль</h2>
+                <p>Важно! Через этот пароль вы будете входить в акаунт. Не показывайте его никому и не забудьте. Если вы все таки забыли то напишите</p>
+                <input type="password" id="new-password" placeholder="Пароль">
+                <button id="finish-registration">Завершить регистрацию</button>
+                <div id="reg-error" class="error-message"></div>
                 `;
 
                 document.getElementById('finish-registration').onclick = async () => {
                     const password = document.getElementById('new-password').value;
-                    const regError = document.getElementById('reg-error');
 
-                    if (!password || password.length < 4) {
-                        regError.innerHTML = 'Пароль должен быть не менее 4 символов';
-                        return;
-                    }
+                    const regResponse = await fetch('/api/auth/itd/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: currentUsername, password })
+                    });
 
-                    try {
-                        const regData = await postJSON('/api/auth/itd/register', { username: currentUsername, password });
+                    const regData = await regResponse.json();
 
-                        if (regData.success) {
-                            window.location.href = '/';
-                        } else {
-                            regError.innerHTML = regData.message || 'Ошибка регистрации';
-                        }
-                    } catch (err) {
-                        regError.innerHTML = err.message;
+                    if (regData.success) {
+                        window.location.href = '/';
+                    } else {
+                        document.getElementById('reg-error').innerHTML = regData.message || 'Ошибка регистрации';
                     }
                 };
             } else {
-                verificationError.innerHTML = data.message || 'Пост не найден';
+                document.getElementById('verification-error').innerHTML = data.message || 'Пост не найден';
                 checkButton.disabled = false;
                 checkButton.textContent = 'Я опубликовал(а) пост';
             }
         } catch (err) {
-            verificationError.innerHTML = err.message;
+            document.getElementById('verification-error').innerHTML = 'Ошибка проверки';
             checkButton.disabled = false;
             checkButton.textContent = 'Я опубликовал(а) пост';
         }
@@ -171,13 +178,10 @@
     returnFromPassword.addEventListener('click', () => {
         passwordDiv.style.display = 'none';
         authForm.style.display = 'block';
-        passwordError.innerHTML = '';
-        passwordInput.value = '';
     });
 
     returnButton.addEventListener('click', () => {
         authForm.style.display = 'block';
         verificationDiv.style.display = 'none';
-        verificationError.innerHTML = '';
     });
 })();
