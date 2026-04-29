@@ -9,7 +9,25 @@ dotenv.config();
 
 const app = express();
 
-app.use(helmet());
+app.use(
+    helmet({
+        contentSecurityPolicy: {
+            directives: {
+                defaultSrc: ["'self'"],
+                scriptSrc: [
+                    "'self'",
+                    "'unsafe-inline'",
+                    "https://challenges.cloudflare.com"
+                ],
+                styleSrc: ["'self'", "'unsafe-inline'"],
+                imgSrc: ["'self'", "data:", "https:", "http:"],
+                frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+                connectSrc: ["'self'", "https://challenges.cloudflare.com"]
+            }
+        }
+    })
+);
+
 app.disable('x-powered-by');
 
 const loginLimiter = rateLimit({

@@ -17,30 +17,44 @@
 
     loginButton.addEventListener('click', async () => {
         const username = usernameInput.value.trim();
-        if (usernameInput.value.trim() === currentUsername) return;
-        
+
         loginButton.textContent = 'Проверяю...';
         loginButton.disabled = true;
-        
 
         errorDiv.innerHTML = '';
         accountDiv.innerHTML = '';
 
         if (!username) {
             errorDiv.innerHTML = 'Введите никнейм';
+            loginButton.textContent = 'Найти';
+            loginButton.disabled = false;
             return;
         }
 
         try {
+            const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
+
+            if (!turnstileResponse) {
+                errorDiv.innerHTML = 'Пройдите проверку';
+                loginButton.textContent = 'Найти';
+                loginButton.disabled = false;
+                return;
+            }
+
             const response = await fetch('/api/auth/itd/check', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username })
+                body: JSON.stringify({
+                    username,
+                    'cf-turnstile-response': turnstileResponse
+                })
             });
 
             if (response.status === 429) {
                 const errorData = await response.json();
                 errorDiv.innerHTML = errorData.error || 'Слишком много запросов';
+                loginButton.textContent = 'Найти';
+                loginButton.disabled = false;
                 return;
             }
 
@@ -48,6 +62,8 @@
 
             if (!data.exists) {
                 errorDiv.innerHTML = 'Пользователь не найден в ИТД';
+                loginButton.textContent = 'Найти';
+                loginButton.disabled = false;
                 return;
             }
 
@@ -55,6 +71,8 @@
                 currentUsername = username;
                 authForm.style.display = 'none';
                 passwordDiv.style.display = 'block';
+                loginButton.textContent = 'Найти';
+                loginButton.disabled = false;
                 return;
             }
 
@@ -106,21 +124,31 @@
             document.getElementById('verification-error').innerHTML = 'Ошибка генерации кода';
         }
     }
+
     loginSubmit.addEventListener('click', async () => {
         const password = passwordInput.value;
 
-        const response = await fetch('/api/auth/itd/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username: currentUsername, password })
-        });
+        if (!password) {
+            passwordError.innerHTML = 'Введите пароль';
+            return;
+        }
 
-        const data = await response.json();
+        try {
+            const response = await fetch('/api/auth/itd/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUsername, password })
+            });
 
-        if (data.success) {
-            window.location.href = '/';
-        } else {
-            passwordError.innerHTML = data.message || 'Неверный пароль';
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = '/';
+            } else {
+                passwordError.innerHTML = data.message || 'Неверный пароль';
+            }
+        } catch (err) {
+            passwordError.innerHTML = 'Ошибка соединения';
         }
     });
 
@@ -139,28 +167,42 @@
 
             if (data.verifed) {
                 verificationDiv.innerHTML = `
-                <h2>Придумайте пароль</h2>
-                <p>Важно! Через этот пароль вы будете входить в акаунт. Не показывайте его никому и не забудьте. Если вы все таки забыли то напишите</p>
-                <input type="password" id="new-password" placeholder="Пароль">
-                <button id="finish-registration">Завершить регистрацию</button>
-                <div id="reg-error" class="error-message"></div>
+                    <h2>Придумайте пароль</h2>
+                    <p>Через этот пароль вы будете входить в аккаунт. Не показывайте его никому и не забудьте.</p>
+                    <input type="password" id="new-password" placeholder="Пароль">
+                    <button id="finish-registration">Завершить регистрацию</button>
+                    <div id="reg-error" class="error-message"></div>
                 `;
 
                 document.getElementById('finish-registration').onclick = async () => {
                     const password = document.getElementById('new-password').value;
 
-                    const regResponse = await fetch('/api/auth/itd/register', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ username: currentUsername, password })
-                    });
+                    if (!password) {
+                        document.getElementById('reg-error').innerHTML = 'Введите пароль';
+                        return;
+                    }
 
-                    const regData = await regResponse.json();
+                    if (password.length < 4) {
+                        document.getElementById('reg-error').innerHTML = 'Минимум 4 символа';
+                        return;
+                    }
 
-                    if (regData.success) {
-                        window.location.href = '/';
-                    } else {
-                        document.getElementById('reg-error').innerHTML = regData.message || 'Ошибка регистрации';
+                    try {
+                        const regResponse = await fetch('/api/auth/itd/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: currentUsername, password })
+                        });
+
+                        const regData = await regResponse.json();
+
+                        if (regData.success) {
+                            window.location.href = '/';
+                        } else {
+                            document.getElementById('reg-error').innerHTML = regData.message || 'Ошибка регистрации';
+                        }
+                    } catch (err) {
+                        document.getElementById('reg-error').innerHTML = 'Ошибка соединения';
                     }
                 };
             } else {
@@ -178,6 +220,8 @@
     returnFromPassword.addEventListener('click', () => {
         passwordDiv.style.display = 'none';
         authForm.style.display = 'block';
+        passwordInput.value = '';
+        passwordError.innerHTML = '';
     });
 
     returnButton.addEventListener('click', () => {

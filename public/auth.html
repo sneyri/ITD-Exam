@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход через ИТД</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
@@ -14,9 +15,15 @@
             <h2>Вход в аккаунт</h2>
             <p>Введите ваш никнейм из ИТД</p>
             <input type="text" id="username-input" placeholder="Ваш никнейм" autocomplete="off">
+
             <button id="login-btn" class="btn">Найти</button>
             <div id="account"></div>
             <div id="login-error" class="error-message"></div>
+
+            <div class="cf-turnstile" 
+                data-sitekey="0x4AAAAAADFsOLZQicyKue09" 
+                data-theme="light">
+            </div>
         </div>
 
         <div id="verification" style="display: none;">
