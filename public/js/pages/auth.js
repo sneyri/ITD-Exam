@@ -15,6 +15,13 @@
 
     let currentUsername = '';
 
+    function resetTurnstile() {
+        const widget = document.querySelector('.cf-turnstile');
+        if (widget && window.turnstile) {
+            window.turnstile.reset(widget);
+        }
+    }
+
     loginButton.addEventListener('click', async () => {
         const username = usernameInput.value.trim();
 
@@ -218,6 +225,7 @@
     });
 
     returnFromPassword.addEventListener('click', () => {
+        resetTurnstile();
         passwordDiv.style.display = 'none';
         authForm.style.display = 'block';
         passwordInput.value = '';
@@ -225,6 +233,7 @@
     });
 
     returnButton.addEventListener('click', () => {
+        resetTurnstile();
         authForm.style.display = 'block';
         verificationDiv.style.display = 'none';
     });

@@ -1549,7 +1549,6 @@ button.remove-admin:hover {
     transform: translateY(-1px);
 }
 
-/* ===== ОПЦИИ ВОПРОСОВ ===== */
 .options-list {
     display: flex;
     flex-direction: column;
@@ -2483,4 +2482,20 @@ button {
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.8);
+}
+
+.variant-card.completed {
+    opacity: 0.5;
+    background: var(--bg-secondary);
+    pointer-events: none;
+}
+
+.variant-card.completed strong {
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.variant-card.completed .btn {
+    background: var(--text-muted);
+    cursor: not-allowed;
 }

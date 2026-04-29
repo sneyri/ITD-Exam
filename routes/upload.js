@@ -2,6 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const router = express.Router();
+const { requireAdmin } = require('./middleware');
+
+router.use(requireAdmin);
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {

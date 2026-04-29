@@ -6,7 +6,7 @@
         showLoading(container);
 
         try {
-            const results = await getJSON(`/api/exam/my-results?user_id=${1}`);
+            const results = await getJSON(`/api/exam/my-results`);
 
             if (results.length === 0) {
                 container.innerHTML = '<div class="no-results">У вас пока нет результатов. Пройдите экзамен.</div>';

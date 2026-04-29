@@ -1,6 +1,7 @@
 const express = require('express');
 const pool = require('../db');
 const router = express.Router();
+const { requireAdmin } = require('./middleware');
 
 router.get('/', async (req, res) => {
     try {
@@ -11,14 +12,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/admin', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM exam_variants ORDER BY id');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 router.get('/active', async (req, res) => {
     try {
@@ -37,6 +30,17 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ error: 'Вариант не найден' });
         }
         res.json(result.rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.use(requireAdmin);
+
+router.get('/admin', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM exam_variants ORDER BY id');
+        res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
