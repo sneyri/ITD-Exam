@@ -6,7 +6,11 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 
 const { ITDClient } = require('itd-sdk-js');
-const client = new ITDClient();
+const client = new ITDClient({
+    headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
+    }
+});
 
 router.post('/itd/generateCode', async (req, res) => {
     const { username } = req.body;
