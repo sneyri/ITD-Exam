@@ -6,11 +6,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 
 const { ITDClient } = require('itd-sdk-js');
-const client = new ITDClient({
-    headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
-    }
-});
+const client = new ITDClient();
 
 router.post('/itd/generateCode', async (req, res) => {
     const { username } = req.body;
@@ -41,13 +37,16 @@ router.post('/itd/verify', async (req, res) => {
         const codes = result.rows.map(row => row.code);
 
         const post = await client.getUserLatestPost(username, 10);
+        console.log(post);
 
         let found = false;
 
-        for (const code of codes) {
-            if (post?.content?.includes(code) || post?.originalPost?.content?.includes(code)) {
-                found = true;
-                break;
+        if (post?.wallRecipientId === null && post?.author?.username === username) {
+            for (const code of codes) {
+                if (post.content.includes(code)) {
+                    found = true;
+                    break;
+                }
             }
         }
 

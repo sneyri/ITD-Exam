@@ -57,6 +57,8 @@
                 })
             });
 
+            resetTurnstile();
+
             if (response.status === 429) {
                 const errorData = await response.json();
                 errorDiv.innerHTML = errorData.error || 'Слишком много запросов';
@@ -86,15 +88,15 @@
             currentUsername = username;
 
             accountDiv.innerHTML = `
-                <div class="itd-username">
-                    <div class="avatar">${escapeHtml(data.data.avatar)}</div>
-                    <div class="info">
-                        <span class="name">${escapeHtml(data.data.displayName || data.data.username)}</span>
-                        <span class="nick">@${escapeHtml(data.data.username)}</span>
-                    </div>
+            <div class="itd-username">
+                <div class="avatar">${escapeHtml(data.data.avatar)}</div>
+                <div class="info">
+                    <span class="name">${escapeHtml(data.data.displayName || data.data.username)}</span>
+                    <span class="nick">@${escapeHtml(data.data.username)}</span>
                 </div>
-                <button id="submit-account">Это я (клянусь)</button>
-            `;
+            </div>
+            <button id="submit-account">Это я (клянусь)</button>
+        `;
 
             document.getElementById('submit-account').onclick = async () => {
                 await startVerification(username);

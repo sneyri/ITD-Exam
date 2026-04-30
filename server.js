@@ -48,7 +48,7 @@ const checkLimiter = rateLimit({
 
 const codeGenLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    max: 2,
+    max: 3,
     message: { error: 'Слишком много кодов. Подождите 10 минут.' },
     standardHeaders: true,
     legacyHeaders: false,
