@@ -99,7 +99,7 @@ async function generatePage() {
                 
                 usersHTML += `
                 <div class="${cardClass}" data-id="${voteId}" data-nomination="${nomination.name}">
-                    <img class="nomination__image" src="assets/nominations/Users/${user}.png" alt="картинка" onerror="this.src='assets/default.png'">
+                    <img class="nomination__image" src="assets/nominations/Users/${user}.png" alt="картинка">
                     <p>${escapeHtml(user)}</p>
                     <button class="${buttonClass}" ${buttonDisabled ? 'disabled' : ''}>${buttonText}</button>
                     ${isUserVotedForThis ? '<span class="voted-badge">Ваш голос</span>' : ''}

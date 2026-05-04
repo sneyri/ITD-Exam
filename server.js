@@ -101,7 +101,7 @@ app.use('/api/auth/itd/login', loginLimiter);
 app.use('/api/auth/itd/register', registerLimiter);
 app.use('/api', apiLimiter);
 app.use('/api/exam/submit', submitExamLimiter);
-app.use('/api/nominations', nominationVoteLimiter);
+app.use('/api/nominations/vote', nominationVoteLimiter);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
