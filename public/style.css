@@ -20,9 +20,9 @@
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --transition: all 0.2s ease;
 }
 
@@ -254,7 +254,7 @@ nav ul li a:hover {
 .auth-form input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .auth-form .btn {
@@ -337,7 +337,7 @@ nav ul li a:hover {
 .question-block input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .admin-container {
@@ -437,7 +437,7 @@ nav ul li a:hover {
 .search-bar input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .pagination {
@@ -454,7 +454,7 @@ nav ul li a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     align-items: center;
     justify-content: center;
     z-index: 1000;
@@ -509,7 +509,7 @@ nav ul li a:hover {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-group textarea {
@@ -620,38 +620,47 @@ nav ul li a:hover {
     .container {
         padding: 1rem;
     }
+
     h1 {
         font-size: 1.5rem;
     }
+
     .admin-container {
         flex-direction: column;
     }
+
     .admin-sidebar {
         width: 100%;
         flex-direction: row;
         flex-wrap: wrap;
     }
+
     .tab {
         flex: 1;
         text-align: center;
     }
+
     .variants-grid {
         grid-template-columns: 1fr;
     }
+
     .answers-header,
     .answer-row {
         grid-template-columns: 1fr;
         gap: 0.5rem;
     }
+
     .answers-header {
         display: none;
     }
+
     .answer-row {
         padding: 1rem;
         border: 1px solid var(--border-light);
         border-radius: var(--radius-md);
         margin-bottom: 1rem;
     }
+
     .answer-row div:before {
         content: attr(data-label);
         font-weight: 600;
@@ -660,41 +669,51 @@ nav ul li a:hover {
         font-size: 0.75rem;
         color: var(--text-muted);
     }
+
     .admin-table,
     .results-table {
         font-size: 0.75rem;
     }
+
     .admin-table th,
     .admin-table td,
     .results-table th,
     .results-table td {
         padding: 0.5rem;
     }
+
     .option-row {
         flex-direction: column;
         align-items: stretch;
     }
+
     .option-row input[type="text"] {
         width: 100%;
     }
+
     .option-row label {
         white-space: normal;
     }
+
     .form-group {
         flex-direction: column;
         align-items: stretch;
     }
+
     .form-group input,
     .form-group select,
     .form-group textarea {
         width: 100%;
     }
+
     .form-group .btn {
         width: 100%;
     }
+
     .variant-actions {
         flex-direction: column;
     }
+
     .btn-edit-questions,
     .btn-delete,
     .btn-edit-title {
@@ -793,7 +812,7 @@ nav ul li a:hover {
 .question-form-container input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 #newOptionsContainer {
@@ -964,7 +983,7 @@ nav ul li a:hover {
 .form-group input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .form-group .btn {
@@ -994,7 +1013,7 @@ nav ul li a:hover {
 .form-group textarea:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .variants-table {
@@ -1390,7 +1409,7 @@ button.remove-admin:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     align-items: center;
     justify-content: center;
     z-index: 10000;
@@ -1610,7 +1629,7 @@ button.remove-admin:hover {
 .question-form-container input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .option-row {
@@ -1959,23 +1978,23 @@ button.remove-admin:hover {
         padding: 1rem;
         width: 95%;
     }
-    
+
     .edit-modal-buttons {
         flex-direction: column;
     }
-    
+
     .edit-modal-buttons .btn {
         width: 100%;
     }
-    
+
     .modal-container {
         width: 95%;
     }
-    
+
     .modal-header {
         padding: 0.75rem 1rem;
     }
-    
+
     .modal-body {
         padding: 1rem;
     }
@@ -2157,8 +2176,15 @@ button.remove-admin:hover {
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
 }
 
 #secret-code-label.loading-code {
@@ -2370,7 +2396,7 @@ button {
 #password-input:focus,
 #new-password:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(79,110,247,0.1);
+    box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.1);
 }
 
 #submit-account {

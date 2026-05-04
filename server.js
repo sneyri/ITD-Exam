@@ -86,15 +86,22 @@ const submitExamLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const nominationVoteLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 15,
+    message: { error: 'Слишком много голосов. Подождите минуту.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
 app.use('/api/auth/itd/check', checkLimiter);
 app.use('/api/auth/itd/generateCode', codeGenLimiter);
 app.use('/api/auth/itd/verify', verifyLimiter);
 app.use('/api/auth/itd/login', loginLimiter);
 app.use('/api/auth/itd/register', registerLimiter);
-
 app.use('/api', apiLimiter);
-
 app.use('/api/exam/submit', submitExamLimiter);
+app.use('/api/nominations', nominationVoteLimiter);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -109,6 +116,7 @@ const examRoutes = require('./routes/exam');
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const uploadRoutes = require('./routes/upload');
+const nominationRoutes = require('./routes/nomination');
 
 app.use('/api/upload', uploadRoutes);
 app.use('/api/questions', questionsRoutes);
@@ -116,7 +124,8 @@ app.use('/api/variants', variantsRoutes);
 app.use('/api/exam', examRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/nominations', nominationRoutes);
 app.use('/', pagesRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {});
+app.listen(PORT, () => { });

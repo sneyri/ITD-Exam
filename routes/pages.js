@@ -6,6 +6,10 @@ router.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/home.html'));
 });
 
+router.get('/exam', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/itdExam.html'));
+});
+
 router.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
@@ -29,5 +33,17 @@ router.get('/auth', (req, res) => {
 router.get('/result-details', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/result-details.html'));
 });
+
+router.get('/nominations', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/nominations.html'));
+});
+
+router.get('/vote', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/nomination__vote.html'));
+})
+
+router.get('/top-secret', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/secret.html'));
+})
 
 module.exports = router;

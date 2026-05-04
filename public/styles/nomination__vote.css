@@ -1,0 +1,582 @@
+:root {
+    --index: calc(1vw + 1vh);
+    --transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    --gold: #ffb347;
+    --gold-soft: rgba(255, 180, 80, 0.35);
+
+    --bg-dark: #050505;
+    --card-bg: rgba(25, 15, 6, 0.65);
+    --border: rgba(255, 180, 80, 0.2);
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at 50% 20%, #1a0a00, #000 70%);
+    color: #fff;
+    overflow-x: hidden;
+}
+
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(255, 140, 0, 0.08), transparent 60%);
+    pointer-events: none;
+}
+
+.header .logo {
+    text-align: center;
+    margin-top: 1em;
+
+    font-size: calc(var(--index) * 2.6);
+    font-weight: 800;
+
+    background: linear-gradient(135deg, #ffe066, #ffb347, #ff8c00);
+    -webkit-background-clip: text;
+    color: transparent;
+
+    text-shadow: 0 0 25px rgba(255, 140, 0, 0.35);
+}
+
+.nominations {
+    margin: calc(var(--index) * 3) auto;
+    max-width: 1200px;
+    padding: 0 20px;
+}
+
+.nomination {
+    margin-top: calc(var(--index) * 2.5);
+    text-align: center;
+}
+
+.nomination__name {
+    font-size: calc(var(--index) * 1.9);
+    font-weight: 600;
+    margin-bottom: calc(var(--index) * 1.2);
+    color: #ffe0a3;
+
+    text-shadow: 0 0 12px rgba(255, 160, 60, 0.25);
+}
+
+.nomination__userList {
+    display: flex;
+    gap: calc(var(--index) * 1.6);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card__user {
+    background: var(--card-bg);
+    padding: calc(var(--index) * 1.8);
+    border-radius: 18px;
+
+    border: 1px solid var(--border);
+    backdrop-filter: blur(12px);
+
+    transition: var(--transition);
+
+    flex: 1;
+    min-width: 220px;
+    max-width: 260px;
+
+    text-align: center;
+
+    opacity: 0;
+    transform: translateY(30px) scale(0.96);
+    animation: cardReveal 0.8s ease forwards;
+}
+
+.card__user:nth-child(1) { animation-delay: 0.1s; }
+.card__user:nth-child(2) { animation-delay: 0.2s; }
+.card__user:nth-child(3) { animation-delay: 0.3s; }
+.card__user:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes cardReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.card__user:hover {
+    transform: translateY(-10px) scale(1.03);
+    border-color: rgba(255, 180, 80, 0.5);
+
+    box-shadow:
+        0 20px 40px rgba(0,0,0,0.6),
+        0 0 25px rgba(255, 140, 0, 0.15);
+}
+
+.nomination__image {
+    width: 160px;
+    border-radius: 14px;
+    margin-bottom: 12px;
+
+    border: 1px solid rgba(255, 180, 80, 0.3);
+
+    transition: var(--transition);
+}
+
+.card__user:hover .nomination__image {
+    transform: scale(1.06);
+}
+
+.card__user p {
+    font-size: calc(var(--index) * 0.9);
+    font-weight: 500;
+}
+
+.card__vote {
+    margin-top: 12px;
+    padding: 8px 22px;
+
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+
+    border-radius: 999px;
+    border: 1px solid var(--gold-soft);
+
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+
+    cursor: pointer;
+
+    transition: var(--transition);
+}
+
+.card__vote:hover {
+    background: rgba(255, 140, 0, 0.25);
+    border-color: var(--gold);
+
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .nomination__userList {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card__user {
+        width: 100%;
+        max-width: 360px;
+    }
+
+    .header .logo {
+        font-size: calc(var(--index) * 3);
+    }
+}
+
+.card__vote:disabled,
+.card__vote.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(50, 50, 50, 0.6);
+    border-color: rgba(255, 180, 80, 0.15);
+    transform: none;
+    box-shadow: none;
+}
+
+.card__vote:disabled:hover,
+.card__vote.disabled:hover {
+    background: rgba(50, 50, 50, 0.6);
+    transform: none;
+    box-shadow: none;
+    border-color: rgba(255, 180, 80, 0.15);
+}
+
+.card__vote.voted {
+    background: linear-gradient(135deg, #ffb347, #ff8c00);
+    color: #000;
+    font-weight: 600;
+    border-color: #ffd700;
+    cursor: default;
+    opacity: 0.9;
+}
+
+.card__vote.voted:hover {
+    transform: none;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
+}
+
+.voted-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 4px 12px;
+    background: linear-gradient(135deg, #ffb347, #ff8c00);
+    color: #000;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 0 12px rgba(255, 140, 0, 0.4);
+    animation: badgeGlow 1.5s ease-out;
+}
+
+@keyframes badgeGlow {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+        box-shadow: 0 0 0px rgba(255, 140, 0, 0);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 12px rgba(255, 140, 0, 0.4);
+    }
+}
+
+.nomination.disabled-nomination {
+    opacity: 0.85;
+}
+
+.nomination.disabled-nomination .card__vote {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.nomination.disabled-nomination .card__user {
+    filter: grayscale(0.15);
+}
+
+.nomination__status {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 4px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #ffb347;
+    border: 1px solid rgba(255, 180, 80, 0.3);
+}
+
+.nomination__status.voted {
+    color: #ffd700;
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+}
+
+.card__vote:disabled[title] {
+    cursor: not-allowed;
+}
+
+.card__vote:active:not(:disabled) {
+    transform: scale(0.95);
+}
+
+.card__vote.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.card__vote.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffb347;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.votes-count {
+    transition: all 0.3s ease;
+}
+
+.votes-count.updated {
+    transform: scale(1.1);
+    color: #ffb347;
+    text-shadow: 0 0 8px rgba(255, 140, 0, 0.5);
+}
+
+.card__user.vote-success {
+    animation: goldFlash 0.6s ease-out;
+}
+
+@keyframes goldFlash {
+    0% {
+        border-color: rgba(255, 180, 80, 0.3);
+        box-shadow: 0 0 0px rgba(255, 215, 0, 0);
+    }
+    50% {
+        border-color: #ffd700;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    }
+    100% {
+        border-color: rgba(255, 180, 80, 0.5);
+        box-shadow: 0 0 25px rgba(255, 140, 0, 0.15);
+    }
+}
+
+@media (max-width: 768px) {
+    .voted-badge {
+        font-size: 9px;
+        padding: 3px 10px;
+    }
+    
+    .nomination__status {
+        font-size: 10px;
+        margin-left: 8px;
+        padding: 3px 8px;
+    }
+    
+    .card__vote.voted {
+        font-size: 10px;
+    }
+}
+
+.nomination.voted-nomination {
+    opacity: 0.85;
+    position: relative;
+}
+
+.nomination.voted-nomination::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 30%, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+    pointer-events: none;
+    border-radius: 24px;
+    z-index: 1;
+}
+
+.card__user.voted-card {
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4);
+    background: linear-gradient(135deg, rgba(255, 180, 80, 0.25), rgba(255, 140, 0, 0.15));
+    transform: scale(1.02);
+}
+
+.card__user.voted-card .nomination__image {
+    filter: brightness(1.1) drop-shadow(0 0 8px rgba(255, 215, 0, 0.5));
+}
+
+.card__user.disabled-card {
+    opacity: 0.55;
+    filter: grayscale(0.4);
+    transform: scale(0.98);
+}
+
+.card__user.disabled-card:hover {
+    transform: scale(0.98);
+    opacity: 0.55;
+}
+
+.card__vote:disabled,
+.card__vote.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(30, 30, 30, 0.8);
+    border-color: rgba(255, 180, 80, 0.15);
+    transform: none;
+}
+
+.card__vote:disabled:hover,
+.card__vote.disabled:hover {
+    background: rgba(30, 30, 30, 0.8);
+    transform: none;
+}
+
+.card__vote.voted {
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #1a0a00;
+    font-weight: 700;
+    border-color: #ffd700;
+    cursor: default;
+    text-shadow: none;
+}
+
+.voted-badge {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #1a0a00;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    animation: badgeAppear 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+@keyframes badgeAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(-10px);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.card__vote.loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.card__vote.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #ffb347;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.card__user.vote-success {
+    animation: goldFlash 0.6s ease-out;
+}
+
+@keyframes goldFlash {
+    0% {
+        border-color: rgba(255, 180, 80, 0.3);
+        box-shadow: 0 0 0px rgba(255, 215, 0, 0);
+    }
+    40% {
+        border-color: #ffd700;
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
+        transform: scale(1.03);
+    }
+    100% {
+        border-color: rgba(255, 180, 80, 0.5);
+        box-shadow: 0 0 25px rgba(255, 140, 0, 0.15);
+        transform: scale(1);
+    }
+}
+
+.nomination.voted-nomination .nomination__name::after {
+    content: ' ✓ ГОЛОСОВАНИЕ ЗАВЕРШЕНО';
+    font-size: 14px;
+    background: rgba(255, 215, 0, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-left: 15px;
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .nomination.voted-nomination .nomination__name::after {
+        font-size: 10px;
+        padding: 3px 8px;
+        margin-left: 8px;
+        display: inline-block;
+        margin-top: 8px;
+    }
+    
+    .voted-badge {
+        font-size: 9px;
+        padding: 4px 10px;
+    }
+    
+    .card__vote.voted,
+    .card__vote.disabled {
+        font-size: 10px;
+    }
+}
+
+.card__user.voted-card {
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.4) !important;
+    background: linear-gradient(135deg, rgba(255, 180, 80, 0.25), rgba(255, 140, 0, 0.15)) !important;
+    transform: scale(1.02);
+}
+
+.card__user.disabled-card {
+    opacity: 0.55 !important;
+    filter: grayscale(0.4) !important;
+    transform: scale(0.98) !important;
+}
+
+.card__user.disabled-card:hover {
+    transform: scale(0.98) !important;
+    opacity: 0.55 !important;
+}
+
+.nomination.voted-nomination {
+    opacity: 0.85;
+    position: relative;
+}
+
+.nomination.voted-nomination .card__user:not(.voted-card) {
+    opacity: 0.5;
+    filter: grayscale(0.3);
+}
+
+.voted-badge {
+    display: inline-block !important;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: linear-gradient(135deg, #ffd700, #ffb347);
+    color: #1a0a00;
+    font-size: 11px;
+    font-weight: 800;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    animation: badgeAppear 0.5s ease-out;
+}
+
+.nomination.voted-nomination .nomination__name::after {
+    content: ' ✓ ГОЛОСОВАНИЕ ЗАВЕРШЕНО';
+    font-size: 14px;
+    background: rgba(255, 215, 0, 0.2);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-left: 15px;
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+@keyframes badgeAppear {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) translateY(-10px);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
