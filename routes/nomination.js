@@ -3,21 +3,6 @@ const pool = require('../db');
 const router = express.Router();
 const { requireAuth } = require('./middleware');
 
-router.get('/vote/:voteId', requireAuth, async (req, res) => {
-    const { voteId } = req.params;
-    
-    try {
-        const result = await pool.query(
-            'SELECT COUNT(*) as count FROM nomination_votes WHERE nominee = $1',
-            [voteId]
-        );
-        res.json({ votes: parseInt(result.rows[0].count) });
-    } catch(error) {
-        console.error('Database error:', error);
-        res.json({ votes: 0 });
-    }
-});
-
 router.get('/user-votes', requireAuth, async (req, res) => {
     try {
         const result = await pool.query(

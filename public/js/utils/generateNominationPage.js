@@ -59,32 +59,29 @@ async function generatePage() {
         console.error('Container .nominations not found');
         return;
     }
-    
+
     nominations__container.innerHTML = '';
     let userIndex = 0;
-    
+
     await fetchUserVotes();
-    
+
     for (const nomination of nominations) {
         let usersHTML = '';
-        
+
         for (let i = 0; i < nomination.users.length; i++) {
             const user = nomination.users[i];
             const voteId = `${user}_${userIndex}`;
-            
+
             try {
-                const response = await getJSON(`/api/nominations/vote/${voteId}`);
-                const votesCount = response.votes || 0;
-                
                 const voteInfo = votedNominations.get(nomination.name);
                 const isUserVotedForThis = voteInfo?.hasVoted && voteInfo.votedFor === voteId;
                 const isNominationVoted = voteInfo?.hasVoted;
-                
+
                 let buttonText = 'проголосовать';
                 let buttonDisabled = false;
                 let buttonClass = 'card__vote';
                 let cardClass = 'card__user';
-                
+
                 if (isUserVotedForThis) {
                     buttonText = '✓ Вы голосовали';
                     buttonDisabled = true;
@@ -96,7 +93,7 @@ async function generatePage() {
                     buttonClass = 'card__vote disabled';
                     cardClass = 'card__user disabled-card';
                 }
-                
+
                 usersHTML += `
                 <div class="${cardClass}" data-id="${voteId}" data-nomination="${nomination.name}">
                     <img class="nomination__image" src="assets/nominations/Users/${user}.png" alt="картинка">
@@ -116,10 +113,10 @@ async function generatePage() {
             }
             userIndex++;
         }
-        
+
         const voteInfo = votedNominations.get(nomination.name);
         const nominationClass = voteInfo?.hasVoted ? 'nomination voted-nomination' : 'nomination';
-        
+
         nominations__container.innerHTML += `
         <div class="${nominationClass}" data-nomination="${nomination.name}">
             <div class="nomination__name">${escapeHtml(nomination.name)}</div>
@@ -127,9 +124,9 @@ async function generatePage() {
         </div>
         `;
     }
-    
+
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     enhanceVotedStyles();
     attachVoteHandlers();
 }
@@ -138,9 +135,9 @@ async function fetchUserVotes() {
     try {
         const response = await fetch('/api/nominations/user-votes');
         if (!response.ok) return;
-        
+
         const userVotes = await response.json();
-        
+
         for (const vote of userVotes) {
             if (vote.nomination_name) {
                 votedNominations.set(vote.nomination_name, {
@@ -157,30 +154,30 @@ async function fetchUserVotes() {
 function enhanceVotedStyles() {
     for (const [nominationName, voteInfo] of votedNominations) {
         if (!voteInfo.hasVoted) continue;
-        
+
         const nominationDiv = document.querySelector(`.nomination[data-nomination="${nominationName}"]`);
         if (!nominationDiv) continue;
-        
+
         if (!nominationDiv.classList.contains('voted-nomination')) {
             nominationDiv.classList.add('voted-nomination');
         }
-        
+
         const cards = nominationDiv.querySelectorAll('.card__user');
-        
+
         cards.forEach(card => {
             const cardId = card.dataset.id;
-            
+
             if (cardId === voteInfo.votedFor) {
                 card.classList.add('voted-card');
                 card.classList.remove('disabled-card');
-                
+
                 const btn = card.querySelector('.card__vote');
                 if (btn) {
                     btn.textContent = '✓ Вы голосовали';
                     btn.classList.add('voted');
                     btn.disabled = true;
                 }
-                
+
                 if (!card.querySelector('.voted-badge')) {
                     const badge = document.createElement('span');
                     badge.className = 'voted-badge';
@@ -204,42 +201,42 @@ function attachVoteHandlers() {
     document.body.addEventListener('click', async (event) => {
         const voteBtn = event.target.closest('.card__vote');
         if (!voteBtn || voteBtn.disabled) return;
-        
+
         const userCard = voteBtn.closest('.card__user');
         if (!userCard) return;
-        
+
         const id = userCard.dataset.id;
         const nominationName = userCard.dataset.nomination;
-        
+
         if (votedNominations.has(nominationName)) {
             alert('Вы уже голосовали в этой номинации!');
             voteBtn.disabled = true;
             return;
         }
-        
+
         const originalText = voteBtn.textContent;
-        
+
         voteBtn.disabled = true;
         voteBtn.textContent = 'Отправка...';
         voteBtn.classList.add('loading');
-        
+
         try {
-            const result = await postJSON('/api/nominations/vote', { 
+            const result = await postJSON('/api/nominations/vote', {
                 id: id,
-                nominationName: nominationName 
+                nominationName: nominationName
             });
-            
+
             if (result.status) {
                 votedNominations.set(nominationName, {
                     hasVoted: true,
                     votedFor: id
                 });
-                
-                updateNominationUI(nominationName, id, result.votesCount);
-                
+
+                updateNominationUI(nominationName, id);
+
                 userCard.classList.add('vote-success');
                 setTimeout(() => userCard.classList.remove('vote-success'), 600);
-                
+
             } else {
                 throw new Error(result.error || 'Ошибка');
             }
@@ -259,26 +256,26 @@ function attachVoteHandlers() {
 function updateNominationUI(nominationName, votedForId, votesCount) {
     const nominationDiv = document.querySelector(`.nomination[data-nomination="${nominationName}"]`);
     if (!nominationDiv) return;
-    
+
     nominationDiv.classList.add('voted-nomination');
-    
+
     const cards = nominationDiv.querySelectorAll('.card__user');
-    
+
     cards.forEach(card => {
         const cardId = card.dataset.id;
         const btn = card.querySelector('.card__vote');
-        
+
         if (cardId === votedForId) {
             card.classList.add('voted-card');
             card.classList.remove('disabled-card');
-            
+
             if (btn) {
                 btn.textContent = '✓ Вы голосовали';
                 btn.classList.add('voted');
                 btn.disabled = true;
                 btn.classList.remove('loading');
             }
-            
+
             if (!card.querySelector('.voted-badge')) {
                 const badge = document.createElement('span');
                 badge.className = 'voted-badge';
