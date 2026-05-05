@@ -12,7 +12,7 @@
         const data = await response.json();
 
         if (!data.isAdmin) {
-            window.location.href = '/exam';
+            window.location.href = '/tests';
         }
 
         const tabs = document.querySelectorAll('.tab');
