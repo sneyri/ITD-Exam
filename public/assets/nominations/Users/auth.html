@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход через ИТД</title>
+    <link rel="stylesheet" href="/styles/auth.css">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</head>
+
+<body>
+    <div class="container">
+        <div id="auth-form">
+            <h2>Вход в аккаунт</h2>
+            <p>Введите ваш никнейм из ИТД</p>
+            <input type="text" id="username-input" placeholder="Ваш никнейм" autocomplete="off">
+
+            <button id="login-btn" class="btn">Найти</button>
+            <div id="account"></div>
+            <div id="login-error" class="error-message"></div>
+
+            <div class="cf-turnstile" 
+                data-sitekey="0x4AAAAAADFsOLZQicyKue09">
+            </div>
+
+            <p>ATTENTION!!!! Если пишет то что пользователь не найден, при этом вы уверены то что ввели никнейм правильно СРАЗУ же пишите в телеграм канал @itdtests</p>
+        </div>
+
+        <div id="verification" style="display: none;">
+            <h2>Подтверждение аккаунта</h2>
+            <p>Опубликуйте пост на ИТД с этим кодом:</p>
+            <div id="secret-code-label">Загрузка...</div>
+            <p>Важно! Проверяется ваш последний пост. Убедитесь, что пост с кодом — последний. После проверки пост можно удалить.</p>
+            <button id="check-verification" class="btn btn-success">Я опубликовал(а) пост</button>
+            <button id="return-to-auth" class="btn">← Назад</button>
+            <div id="verification-error" class="error-message"></div>
+        </div>
+
+        <div id="password" style="display: none;">
+            <h2>Введите пароль</h2>
+            <p>Введите пароль вы ввели при регистрации</p>
+            <input type="password" id="password-input" placeholder="Пароль">
+            <button id="login-submit">Войти</button>
+            <button id="return-from-password">Назад</button>
+            <div id="password-error" class="error-message"></div>
+        </div>
+    </div>
+
+    <script src="js/utils/helper.js"></script>
+    <script src="js/pages/auth.js"></script>
+</body>
+
+</html>

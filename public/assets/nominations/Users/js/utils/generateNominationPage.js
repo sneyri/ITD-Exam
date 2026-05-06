@@ -96,7 +96,7 @@ async function generatePage() {
 
                 usersHTML += `
                 <div class="${cardClass}" data-id="${voteId}" data-nomination="${nomination.name}">
-                    <img class="nomination__image" src="assets/nominations/Users/${encodeURIComponent(user)}.png" alt="картинка">
+                    <img class="nomination__image" src="assets/nominations/Users/${user}.png" alt="картинка">
                     <p>${escapeHtml(user)}</p>
                     <button class="${buttonClass}" ${buttonDisabled ? 'disabled' : ''}>${buttonText}</button>
                     ${isUserVotedForThis ? '<span class="voted-badge">Ваш голос</span>' : ''}
@@ -105,7 +105,7 @@ async function generatePage() {
             } catch (error) {
                 usersHTML += `
                 <div class="card__user" data-id="${voteId}" data-nomination="${nomination.name}">
-                    <img class="nomination__image" src="assets/nominations/Users/${encodeURIComponent(user)}.png" alt="картинка">
+                    <img class="nomination__image" src="assets/nominations/Users/${user}.png" alt="картинка">
                     <p>${escapeHtml(user)}</p>
                     <button class="card__vote" disabled>Ошибка</button>
                 </div>
