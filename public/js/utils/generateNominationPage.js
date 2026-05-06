@@ -83,7 +83,7 @@ async function generatePage() {
                 let cardClass = 'card__user';
 
                 if (isUserVotedForThis) {
-                    buttonText = '✓ Вы голосовали';
+                    buttonText = 'Вы голосовали';
                     buttonDisabled = true;
                     buttonClass = 'card__vote voted';
                     cardClass = 'card__user voted-card';
@@ -173,7 +173,7 @@ function enhanceVotedStyles() {
 
                 const btn = card.querySelector('.card__vote');
                 if (btn) {
-                    btn.textContent = '✓ Вы голосовали';
+                    btn.textContent = 'Вы голосовали';
                     btn.classList.add('voted');
                     btn.disabled = true;
                 }
@@ -270,7 +270,7 @@ function updateNominationUI(nominationName, votedForId, votesCount) {
             card.classList.remove('disabled-card');
 
             if (btn) {
-                btn.textContent = '✓ Вы голосовали';
+                btn.textContent = 'Вы голосовали';
                 btn.classList.add('voted');
                 btn.disabled = true;
                 btn.classList.remove('loading');
