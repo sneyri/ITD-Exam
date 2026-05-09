@@ -20,18 +20,16 @@
             <div id="account"></div>
             <div id="login-error" class="error-message"></div>
 
-            <div class="cf-turnstile" 
-                data-sitekey="0x4AAAAAADFsOLZQicyKue09">
-            </div>
-
-            <p>ATTENTION!!!! Если пишет то что пользователь не найден, при этом вы уверены то что ввели никнейм правильно СРАЗУ же пишите в телеграм канал @itdtests</p>
+            <p>ATTENTION!!!! Если пишет то что пользователь не найден, при этом вы уверены то что ввели никнейм
+                правильно СРАЗУ же пишите в телеграм канал @itdtests</p>
         </div>
 
         <div id="verification" style="display: none;">
             <h2>Подтверждение аккаунта</h2>
             <p>Опубликуйте пост на ИТД с этим кодом:</p>
             <div id="secret-code-label">Загрузка...</div>
-            <p>Важно! Проверяется ваш последний пост. Убедитесь, что пост с кодом — последний. После проверки пост можно удалить.</p>
+            <p>Важно! Проверяется ваш последний пост. Убедитесь, что пост с кодом — последний. После проверки пост можно
+                удалить.</p>
             <button id="check-verification" class="btn btn-success">Я опубликовал(а) пост</button>
             <button id="return-to-auth" class="btn">← Назад</button>
             <div id="verification-error" class="error-message"></div>
@@ -44,6 +42,19 @@
             <button id="login-submit">Войти</button>
             <button id="return-from-password">Назад</button>
             <div id="password-error" class="error-message"></div>
+        </div>
+
+        <img class="gelmo__pic" src="assets/Gelmo.png" alt="ПОДПИШИСЬ НА GELMO" srcset="">
+    </div>
+
+    <div id="captcha-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Подтверждение</h3>
+            <p>Докажите, что вы не бот</p>
+            <div class="cf-turnstile" id="dynamic-turnstile" data-sitekey="0x4AAAAAADFsOLZQicyKue09"></div>
+            <button id="confirm-captcha-btn" class="btn">Подтвердить</button>
+            <button id="close-captcha-btn" class="btn cancel-btn">Отмена</button>
+            <div id="captcha-error" class="error-message"></div>
         </div>
     </div>
 

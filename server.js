@@ -56,7 +56,7 @@ const codeGenLimiter = rateLimit({
 
 const verifyLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 5,
+    max: 15,
     message: { error: 'Слишком много проверок. Подождите 5 минут.' },
     standardHeaders: true,
     legacyHeaders: false,

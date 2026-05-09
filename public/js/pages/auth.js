@@ -14,99 +14,180 @@
     const passwordError = document.getElementById('password-error');
 
     let currentUsername = '';
+    let currentTurnstileWidget = null;
 
-    function resetTurnstile() {
-        const widget = document.querySelector('.cf-turnstile');
-        if (widget && window.turnstile) {
-            window.turnstile.reset(widget);
+    function showCaptchaModal() {
+        const modal = document.getElementById('captcha-modal');
+        if (!modal) return;
+        
+        modal.style.display = 'flex';
+        
+        const container = document.getElementById('dynamic-turnstile');
+        if (container && window.turnstile) {
+            if (currentTurnstileWidget) {
+                window.turnstile.remove(currentTurnstileWidget);
+            }
+            currentTurnstileWidget = window.turnstile.render(container, {
+                sitekey: '0x4AAAAAADFsOLZQicyKue09'
+            });
         }
+        
+        document.getElementById('captcha-error').innerHTML = '';
+    }
+
+    function hideCaptchaModal() {
+        const modal = document.getElementById('captcha-modal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        if (currentTurnstileWidget && window.turnstile) {
+            window.turnstile.remove(currentTurnstileWidget);
+            currentTurnstileWidget = null;
+        }
+    }
+
+    function showPasswordPrompt() {
+        authForm.style.display = 'none';
+        passwordDiv.style.display = 'block';
+        passwordInput.value = '';
+        passwordError.innerHTML = '';
+    }
+
+    function showRegistrationForm(userData) {
+        accountDiv.innerHTML = `
+            <div class="itd-username">
+                <div class="avatar">${escapeHtml(userData.avatar)}</div>
+                <div class="info">
+                    <span class="name">${escapeHtml(userData.displayName || userData.username)}</span>
+                    <span class="nick">@${escapeHtml(userData.username)}</span>
+                </div>
+            </div>
+            <button id="submit-account">Это я (клянусь)</button>
+        `;
+
+        document.getElementById('submit-account').onclick = async () => {
+            await startVerification(currentUsername);
+        };
     }
 
     loginButton.addEventListener('click', async () => {
         const username = usernameInput.value.trim();
-
-        loginButton.textContent = 'Проверяю...';
-        loginButton.disabled = true;
 
         errorDiv.innerHTML = '';
         accountDiv.innerHTML = '';
 
         if (!username) {
             errorDiv.innerHTML = 'Введите никнейм';
-            loginButton.textContent = 'Найти';
-            loginButton.disabled = false;
             return;
         }
 
+        loginButton.disabled = true;
+        loginButton.textContent = 'Проверяю...';
+
         try {
-            const turnstileResponse = document.querySelector('[name="cf-turnstile-response"]')?.value;
-
-            if (!turnstileResponse) {
-                errorDiv.innerHTML = 'Пройдите проверку';
-                loginButton.textContent = 'Найти';
-                loginButton.disabled = false;
-                return;
-            }
-
-            const response = await fetch('/api/auth/itd/check', {
+            const response = await fetch('/api/auth/itd/check-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username,
-                    'cf-turnstile-response': turnstileResponse
-                })
+                body: JSON.stringify({ username })
             });
-
-            resetTurnstile();
-
-            if (response.status === 429) {
-                const errorData = await response.json();
-                errorDiv.innerHTML = errorData.error || 'Слишком много запросов';
-                loginButton.textContent = 'Найти';
-                loginButton.disabled = false;
-                return;
-            }
 
             const data = await response.json();
 
-            if (!data.exists) {
-                errorDiv.innerHTML = 'Пользователь не найден в ИТД';
-                loginButton.textContent = 'Найти';
+            if (response.status === 429) {
+                errorDiv.innerHTML = data.error || 'Слишком много запросов';
                 loginButton.disabled = false;
+                loginButton.textContent = 'Найти';
                 return;
             }
 
-            if (data.registered) {
-                currentUsername = username;
-                authForm.style.display = 'none';
-                passwordDiv.style.display = 'block';
-                loginButton.textContent = 'Найти';
+            if (!data.exists) {
+                errorDiv.innerHTML = 'Пользователь не найден в ИТД';
                 loginButton.disabled = false;
+                loginButton.textContent = 'Найти';
                 return;
             }
 
             currentUsername = username;
 
-            accountDiv.innerHTML = `
-            <div class="itd-username">
-                <div class="avatar">${escapeHtml(data.data.avatar)}</div>
-                <div class="info">
-                    <span class="name">${escapeHtml(data.data.displayName || data.data.username)}</span>
-                    <span class="nick">@${escapeHtml(data.data.username)}</span>
-                </div>
-            </div>
-            <button id="submit-account">Это я (клянусь)</button>
-        `;
+            if (data.registered) {
+                showPasswordPrompt();
+                loginButton.disabled = false;
+                loginButton.textContent = 'Найти';
+                return;
+            }
 
-            document.getElementById('submit-account').onclick = async () => {
-                await startVerification(username);
-            };
+            if (data.needCaptcha) {
+                hideCaptchaModal();
+                showCaptchaModal();
+                
+                const confirmBtn = document.getElementById('confirm-captcha-btn');
+                const closeCaptchaBtn = document.getElementById('close-captcha-btn');
+                
+                const onConfirm = async () => {
+                    const token = document.querySelector('#dynamic-turnstile [name="cf-turnstile-response"]')?.value;
+                    
+                    if (!token) {
+                        document.getElementById('captcha-error').innerHTML = 'Пройдите проверку';
+                        return;
+                    }
+                    
+                    hideCaptchaModal();
+                    
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    closeCaptchaBtn.removeEventListener('click', onClose);
+                    
+                    loginButton.disabled = true;
+                    loginButton.textContent = 'Проверяю...';
+                    
+                    try {
+                        const verifyResponse = await fetch('/api/auth/itd/verify-captcha', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username, token })
+                        });
+                        
+                        const verifyData = await verifyResponse.json();
+                        
+                        if (!verifyData.success) {
+                            errorDiv.innerHTML = verifyData.error || 'Ошибка проверки';
+                            loginButton.disabled = false;
+                            loginButton.textContent = 'Найти';
+                            return;
+                        }
+                        
+                        if (verifyData.registered) {
+                            showPasswordPrompt();
+                        } else {
+                            showRegistrationForm(verifyData.userData);
+                        }
+                        
+                    } catch (err) {
+                        errorDiv.innerHTML = 'Ошибка сервера';
+                    } finally {
+                        loginButton.disabled = false;
+                        loginButton.textContent = 'Найти';
+                    }
+                };
+                
+                const onClose = () => {
+                    hideCaptchaModal();
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    closeCaptchaBtn.removeEventListener('click', onClose);
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Найти';
+                };
+                
+                confirmBtn.addEventListener('click', onConfirm);
+                closeCaptchaBtn.addEventListener('click', onClose);
+            } else {
+                showRegistrationForm(data.userData);
+            }
 
         } catch (err) {
-            errorDiv.innerHTML = `Ошибка сервера: ${err.message}`;
+            errorDiv.innerHTML = `Ошибка: ${err.message}`;
         } finally {
-            loginButton.textContent = 'Найти';
             loginButton.disabled = false;
+            loginButton.textContent = 'Найти';
         }
     });
 
@@ -215,7 +296,7 @@
                     }
                 };
             } else {
-                document.getElementById('verification-error').innerHTML = data.message || 'Пост не найден';
+                document.getElementById('verification-error').innerHTML = data.message || 'Слишком много запросов, попробуйте черз 5 минут';
                 checkButton.disabled = false;
                 checkButton.textContent = 'Я опубликовал(а) пост';
             }
@@ -227,7 +308,6 @@
     });
 
     returnFromPassword.addEventListener('click', () => {
-        resetTurnstile();
         passwordDiv.style.display = 'none';
         authForm.style.display = 'block';
         passwordInput.value = '';
@@ -235,8 +315,22 @@
     });
 
     returnButton.addEventListener('click', () => {
-        resetTurnstile();
         authForm.style.display = 'block';
         verificationDiv.style.display = 'none';
+        document.getElementById('verification-error').innerHTML = '';
+    });
+
+    const gelmoPic = document.querySelector('.gelmo__pic');
+    if (gelmoPic) {
+        gelmoPic.addEventListener('click', () => {
+            window.open('https://итд.com/@gelmo');
+        });
+    }
+
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('captcha-modal');
+        if (e.target === modal) {
+            hideCaptchaModal();
+        }
     });
 })();

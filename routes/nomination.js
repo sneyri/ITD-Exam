@@ -3,58 +3,46 @@ const pool = require('../db');
 const router = express.Router();
 const { requireAuth } = require('./middleware');
 
-router.get('/user-votes', requireAuth, async (req, res) => {
+router.get('/my-votes', requireAuth, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT nominee, nomination_name FROM nomination_votes WHERE username = $1',
+            'SELECT nomination_name, nominee FROM nomination_votes WHERE username = $1',
             [req.username]
         );
         res.json(result.rows);
-    } catch(error) {
-        console.error('Database error:', error);
-        res.json([]);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
 router.post('/vote', requireAuth, async (req, res) => {
-    const { id, nominationName } = req.body;
-    
-    if (!id || !nominationName) {
-        return res.status(400).json({ error: 'ID и название номинации обязательны' });
-    }
-    
     try {
-        const checkResult = await pool.query(
-            'SELECT * FROM nomination_votes WHERE username = $1 AND nomination_name = $2',
-            [req.username, nominationName]
-        );
-        
-        if (checkResult.rows.length > 0) {
-            return res.status(400).json({ 
-                error: 'Вы уже голосовали в этой номинации',
-                votedFor: checkResult.rows[0].nominee
-            });
+        const { nominee, nominationName } = req.body;
+        const username = req.username;
+
+        if (!nominee || !nominationName) {
+            console.log('Missing data:', { nominee, nominationName });
+            return res.status(400).json({ error: 'Не указан nominee или nominationName' });
         }
-        
+
+        const check = await pool.query(
+            'SELECT id FROM nomination_votes WHERE nomination_name = $1 AND username = $2',
+            [nominationName, username]
+        );
+
+        if (check.rows.length > 0) {
+            return res.status(400).json({ error: 'Вы уже голосовали' });
+        }
+
         await pool.query(
-            'INSERT INTO nomination_votes(nominee, username, nomination_name) VALUES($1, $2, $3)',
-            [id, req.username, nominationName]
+            'INSERT INTO nomination_votes (nominee, username, nomination_name) VALUES ($1, $2, $3)',
+            [nominee, username, nominationName]
         );
-        
-        const voteCount = await pool.query(
-            'SELECT COUNT(*) as count FROM nomination_votes WHERE nominee = $1',
-            [id]
-        );
-        
-        res.json({ 
-            status: true, 
-            message: 'Голос учтен',
-            votesCount: parseInt(voteCount.rows[0].count)
-        });
-    } catch(err) {
-        console.error('Insert error:', err);
-        res.status(500).json({ error: 'Ошибка сервера' });
+
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
-module.exports = router; 
+module.exports = router;

@@ -31,22 +31,60 @@ router.post('/itd/verify', async (req, res) => {
         );
 
         if (result.rows.length === 0) {
-            return res.json({ verifed: false, message: 'Код истек или не найден' });
+            return res.json({ 
+                verifed: false, 
+                message: 'Код истек или не найден. Нажмите "Назад" и запросите новый код.' 
+            });
         }
 
         const codes = result.rows.map(row => row.code);
+        
+        let posts = [];
+        try {
+            const lastPost = await client.getUserLatestPost(username, 10);
+            if (lastPost) posts = [lastPost];
+        } catch (err) {
+            console.error('Ошибка получения постов от ITD:', err);
+            return res.json({ 
+                verifed: false, 
+                message: 'Не удалось получить данные из ИТД. Сервер ИТД временно недоступен. Срочно напишите в тгк @itdtests.' 
+            });
+        }
 
-        const post = await client.getUserLatestPost(username, 10);
-        console.log(post);
+        if (posts.length === 0 || !posts[0]) {
+            return res.json({ 
+                verifed: false, 
+                message: 'Не удалось найти посты в вашем профиле ИТД. Убедитесь, что у вас есть хотя бы один пост.' 
+            });
+        }
+
+        const post = posts[0];
+        
+        if (post?.wallRecipientId !== null && post?.wallRecipientId !== undefined) {
+            return res.json({ 
+                verifed: false, 
+                message: 'Пост найден, но он опубликован на чужой стене. Опубликуйте код на СВОЕЙ стене.' 
+            });
+        }
+        
+        if (post?.author?.username !== username) {
+            return res.json({ 
+                verifed: false, 
+                message: 'Пост найден, но он принадлежит другому пользователю. Опубликуйте пост от вашего аккаунта.' 
+            });
+        }
 
         let found = false;
+        let matchedCode = null;
 
-        if (post?.wallRecipientId === null && post?.author?.username === username) {
-            for (const code of codes) {
-                if (post.content.includes(code)) {
-                    found = true;
-                    break;
-                }
+        const cleanContent = (post.content || '').replace(/\s/g, '').toLowerCase();
+        
+        for (const code of codes) {
+            const cleanCode = code.replace(/\s/g, '').toLowerCase();
+            if (cleanContent.includes(cleanCode)) {
+                found = true;
+                matchedCode = code;
+                break;
             }
         }
 
@@ -55,13 +93,22 @@ router.post('/itd/verify', async (req, res) => {
             return res.json({ verifed: true });
         }
 
-        res.json({ verifed: false, message: 'Пост с кодом не найден' });
+        const codesList = codes.join(', ');
+        const postPreview = (post.content || '').substring(0, 100);
+        
+        return res.json({ 
+            verifed: false, 
+            message: `Код не найден в последнем посте.\n\nСодержимое последнего поста: "${postPreview}"` 
+        });
+
     } catch (err) {
-        console.error('Ошибка:', err);
-        res.status(500).json({ verifed: false, message: err.message });
+        console.error('Ошибка в /itd/verify:', err);
+        res.status(500).json({ 
+            verifed: false, 
+            message: 'Внутренняя ошибка сервера. Попробуйте позже или сообщите в тгк @itdtests.' 
+        });
     }
 });
-
 router.post('/itd/check', async (req, res) => {
     const { username } = req.body;
     const token = req.body['cf-turnstile-response'];
@@ -85,7 +132,7 @@ router.post('/itd/check', async (req, res) => {
 
         const userData = await client.getUserProfile(username);
 
-        if (!userData?.username || !userData?.avatar) {
+        if (!userData?.username) {
             return res.json({ exists: false });
         }
 
@@ -188,6 +235,98 @@ router.get('/me', async (req, res) => {
         res.json({ username: decoded.username });
     } catch (err) {
         res.status(401).json({ error: 'Токен недействителен' });
+    }
+});
+
+router.post('/itd/check-user', async (req, res) => {
+    const { username } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ error: 'Укажите никнейм' });
+    }
+
+    try {
+        const existing = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (existing.rows.length > 0) {
+            return res.json({
+                exists: true,
+                registered: true,
+                needCaptcha: false
+            });
+        }
+
+        const userData = await client.getUserProfile(username);
+
+        if (!userData?.username) {
+            return res.json({ exists: false });
+        }
+
+        return res.json({
+            exists: true,
+            registered: false,
+            needCaptcha: true,
+            userData: {
+                username: userData.username,
+                displayName: userData.displayName,
+                avatar: userData.avatar
+            }
+        });
+
+    } catch (err) {
+        console.error('Ошибка в /itd/check-user:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+router.post('/itd/verify-captcha', async (req, res) => {
+    const { username, token } = req.body;
+
+    if (!username || !token) {
+        return res.status(400).json({ error: 'Не хватает данных' });
+    }
+
+    try {
+        const verify = await axios.post(
+            'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+            {
+                secret: process.env.TURNSTILE_SECRET_KEY,
+                response: token
+            }
+        );
+
+        if (!verify.data.success) {
+            return res.status(403).json({ error: 'Боты не проходят' });
+        }
+
+        const existing = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (existing.rows.length > 0) {
+            return res.json({
+                success: true,
+                registered: true
+            });
+        }
+
+        const userData = await client.getUserProfile(username);
+
+        if (!userData?.username) {
+            return res.json({ success: false, error: 'Пользователь не найден в ИТД' });
+        }
+
+        res.json({
+            success: true,
+            registered: false,
+            userData: {
+                username: userData.username,
+                displayName: userData.displayName,
+                avatar: userData.avatar
+            }
+        });
+
+    } catch (err) {
+        console.error('Ошибка в /itd/verify-captcha:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
