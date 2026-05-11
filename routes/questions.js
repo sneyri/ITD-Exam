@@ -28,7 +28,7 @@ router.get('/variant/:variantId', async (req, res) => {
         res.json(questions.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -53,7 +53,7 @@ router.get('/:id', async (req, res) => {
             }))
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -88,7 +88,7 @@ router.put('/:id', async (req, res) => {
         res.json({ message: 'Обновлено' });
     } catch (err) {
         await client.query('ROLLBACK');
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     } finally {
         client.release();
     }
@@ -127,7 +127,7 @@ router.post('/', async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     } finally {
         client.release();
     }
@@ -139,7 +139,7 @@ router.delete('/:id', async (req, res) => {
         await pool.query('DELETE FROM questions WHERE id = $1', [id]);
         res.json({ message: 'Вопрос удалён' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 

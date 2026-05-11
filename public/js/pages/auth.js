@@ -65,6 +65,8 @@
             <button id="submit-account">Это я (клянусь)</button>
         `;
 
+        currentUsername = userData.username;
+
         document.getElementById('submit-account').onclick = async () => {
             await startVerification(currentUsername);
         };

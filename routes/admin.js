@@ -17,7 +17,7 @@ router.post('/checkAdmin', async (req, res) => {
             res.json({ isAdmin: false });
         }
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 

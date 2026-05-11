@@ -258,6 +258,8 @@ router.post('/itd/check-user', async (req, res) => {
 
         const userData = await client.getUserProfile(username);
 
+        console.log(userData);
+
         if (!userData?.username) {
             return res.json({ exists: false });
         }

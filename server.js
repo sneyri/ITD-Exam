@@ -94,6 +94,15 @@ const nominationVoteLimiter = rateLimit({
     legacyHeaders: false,
 });
 
+const checkUserLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 10,
+    message: { error: 'Слишком частые запросы. Подождите минуту.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use('/api/auth/itd/check-user', checkUserLimiter);
 app.use('/api/auth/itd/check', checkLimiter);
 app.use('/api/auth/itd/generateCode', codeGenLimiter);
 app.use('/api/auth/itd/verify', verifyLimiter);

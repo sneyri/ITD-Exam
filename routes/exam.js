@@ -15,7 +15,7 @@ router.get('/my-results', requireAuth, async (req, res) => {
 
         res.json(results.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -27,7 +27,7 @@ router.get('/completed-variants', requireAuth, async (req, res) => {
         );
         res.json(result.rows.map(row => row.variant_id));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -105,7 +105,7 @@ router.post('/submit', requireAuth, async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -138,7 +138,7 @@ router.get('/result/:resultId', async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 

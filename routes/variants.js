@@ -8,7 +8,7 @@ router.get('/', async (req, res) => {
         const result = await pool.query('SELECT * FROM exam_variants ORDER BY id');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -18,7 +18,7 @@ router.get('/active', async (req, res) => {
         const result = await pool.query('SELECT * FROM exam_variants WHERE is_active = true ORDER BY id');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -31,7 +31,7 @@ router.get('/:id', async (req, res) => {
         }
         res.json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -42,7 +42,7 @@ router.get('/admin', async (req, res) => {
         const result = await pool.query('SELECT * FROM exam_variants ORDER BY id');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -54,7 +54,7 @@ router.put('/:id/toggle', async (req, res) => {
         await pool.query('UPDATE exam_variants SET is_active = $1 WHERE id = $2', [is_active, id]);
         res.json({ success: true });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 
@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Внутренняя ошибка сервера' });
     }
 });
 

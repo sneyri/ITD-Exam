@@ -10,6 +10,9 @@
 </head>
 
 <body>
+    <h1 style="text-align: center;">ПОДПИШИСЬ НА Максим Г*льмо</h1>
+    <img class="gelmo__pic" src="assets/Gelmo.png" alt="ПОДПИШИСЬ НА GELMO" srcset="">
+
     <div class="container">
         <div id="auth-form">
             <h2>Вход в аккаунт</h2>
@@ -20,19 +23,23 @@
             <div id="account"></div>
             <div id="login-error" class="error-message"></div>
 
-            <p>ATTENTION!!!! Если пишет то что пользователь не найден, при этом вы уверены то что ввели никнейм
-                правильно СРАЗУ же пишите в телеграм канал @itdtests</p>
+            <p style="font-size: 20px;">ATTENTION!!! Сайт говно и создан шакалом без образования. Если будут какие то
+                проблемы СРАЗУ же пишите в телеграм канал <a style="text-decoration: none; color: chartreuse;"
+                    href="https://t.me/itdtests" target="_blank">@itdtests</a></p>
         </div>
 
         <div id="verification" style="display: none;">
+            <img style="display: block; width: 100px; margin: 0 auto;" id="ITD_STATUS" src="assets/ITD_STATUS.jpg" alt="">
+
             <h2>Подтверждение аккаунта</h2>
             <p>Опубликуйте пост на ИТД с этим кодом:</p>
-            <div id="secret-code-label">Загрузка...</div>
+            <div id="secret-code-label">Слишком много запросов...</div>
             <p>Важно! Проверяется ваш последний пост. Убедитесь, что пост с кодом — последний. После проверки пост можно
                 удалить.</p>
             <button id="check-verification" class="btn btn-success">Я опубликовал(а) пост</button>
             <button id="return-to-auth" class="btn">← Назад</button>
             <div id="verification-error" class="error-message"></div>
+
         </div>
 
         <div id="password" style="display: none;">
@@ -43,8 +50,6 @@
             <button id="return-from-password">Назад</button>
             <div id="password-error" class="error-message"></div>
         </div>
-
-        <img class="gelmo__pic" src="assets/Gelmo.png" alt="ПОДПИШИСЬ НА GELMO" srcset="">
     </div>
 
     <div id="captcha-modal" class="modal" style="display: none;">
