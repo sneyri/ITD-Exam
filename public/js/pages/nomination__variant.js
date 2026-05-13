@@ -158,4 +158,8 @@ ANTI_CHUZHIE_GLAZA().catch(() => {
     SNEYR_PASSPORT_DANNIE.addEventListener('click', async () => {
         SNEYR_LOCATION_DATA.value = '';
     });
+
+    document.getElementById('secret_button').addEventListener('click', () => {
+        window.open('https://итд.com/@sneyriii');
+    })
 });

@@ -2,53 +2,52 @@ const nominations = [
     {
         name: 'Король ИТД',
         users: [
-            'hungry wolf🐺',
-            'друзьяшка🚨',
             'виталий😎',
-            'Кайд99🏔️',
-            'Pustota🕳️',
-            'Владислав Смирнов🧑‍🎓',
-            'ИТД Status👽',
-            'Густой бульон🥣',
-            'Роман Плетнев Евгеньевич♐',
-            'Денис femboy🎮',
-            'BADIK_SERW🔩',
-            'Коммунистическая Партия ИТД👊',
-            'Skorlange🫠',
-            'Ангел крови😈',
-            'никита аэро🛩️',
-            'HUSH42🪲',
-            'Sigmashishka🐢',
-            'VAL🤢',
             'zpvlc🦥',
+            'Ангел крови😈',
             'gruppa_sovet🎸',
+            'друзьяшка🚨',
+            '☭ Коммунистическая Партия ИТД☭',
+            'Skorlange🫠',
+            'Pustota🕳️',
             'Доброе утро📀',
+            'Роман Плетнев Евгеньевич♐',
+            'Густой бульон🥣',
+            'HUSH⁴²🪲',
+            'Денис femboy🎮',
+            'никита аэро🛩️',
+            'Ктсупер🙃',
+            'VAL🤢',
+            'Sigmashishka🐢',
+            'кайд99🏔️',
+            'hungry wolf🐺',
+            'Владислав Смирнов🧑‍🎓',
+            'ИТД STATUS👽'
         ]
     },
     {
         name: 'Королева ИТД',
         users: [
-            'ougiiuu🌿',
-            'Мусорный бак🦎',
-            'японка вич💀',
-            'клеопатrrи😜',
-            'patato🧌',
-            'Юмено Сайкуру👀',
-            'nowrikins😵',
-            'рыжая radami🃏',
-            'аля🐻‍❄️',
             'dregrav🙄',
-            'меок🎱',
-            'Вика Вилка🧌',
-            'бутерброд майнкрафтович🥪',
-            'Мерша🚯',
             '501💥',
-            'Сумерки🪻',
+            'Вика Вилка🧌',
+            'meok🎱',
             'heroka👩‍❤️‍💋‍👩',
-            'асюта🫢',
             'Paleray',
-            'SANDY',
-            'вожак стаи🐺'
+            'рыжая radami🃏',
+            'nowrikins😵',
+            'SANDY👻',
+            'ougiiuu🌿',
+            'Гирни🍕',
+            'Юмено Сайкуру👀',
+            'KENZI IDK',
+            'patato🧌',
+            'Бутерброд майнкрафтович🥪',
+            'асюта🫢',
+            'Сумерки🪻',
+            'вожак стаи🐺',
+            'lienn🦋',
+            'Мерша🚯'
         ]
     },
     {
@@ -80,6 +79,7 @@ const nominations = [
     {
         name: 'Лучший музыкант ИТД',
         users: [
+            'Влад aikko🖤',
             'никита аэро🛩️',
             'Стримы Сэма🫠',
             'Лешка Пеняжкин🔥',
@@ -87,20 +87,45 @@ const nominations = [
             'CookieMail🍪',
             'gr1mor🎧',
             'гнилаялирика💩',
-            'Кирилл Роки🤮',
+            'Кирилл Роки🤮'
         ]
     },
     {
         name: 'Лучший художник в ИТД',
-        users: []
+        users: [
+            'meok🎱',
+            'heroka👩‍❤️‍💋‍👩',
+            'Paleray✨',
+            'Sigmashishka🐢',
+            'SANDY👻',
+            'ougiiuu🌿',
+            'Юмено Сайкуру👀',
+            'KENZI IDK🎨',
+            'Бутерброд майнкрафтович🥪',
+            'lienn🦋',
+            'Мерша梅尔莎🚯',
+            'Ладно 0+🧟‍♂️',
+            'Бездна Хел⭐',
+            'овийо!!🪡',
+            'Мусорный бак⁴²🦎',
+            'Naodd💕',
+            'kairu.🖌️',
+            'yuutamashi🐢',
+            'hOrlOk🫀',
+            'houki🦊',
+            'BERFY🦶'
+        ]
     },
     {
-        name: 'Самый креативный в ИТД',
-        users: []
-    },
-    {
-        name: 'Лучший мейкап в ИТД',
-        users: []
+        name: 'Лучшие ивенты в ИТД',
+        users: [
+            'никита аэро🛩️',
+            'кайд99🏔️',
+            'Maelstorm!🌀',
+            'Pustota🕳️',
+            '𝕰𝖛𝖌𝖊𝖓𝖞 𝕭𝖆𝖘𝖍𝖊𝖛🤠',
+            'Ктсупер🙃',
+        ]
     },
     {
         name: 'Лучшая галочка ИТД',
@@ -118,7 +143,7 @@ const nominations = [
             'Крис Мастика🧌',
             'Ксенонон👽',
             'псветвт🫧',
-            'Илья Новки🦎',
+            'японка вич💀',
             'Максим Гельмо🐱',
             'алиса виалиска🧃',
             'эйфория!!😎',
@@ -149,7 +174,7 @@ async function generateNominations() {
 
     for (let nomination of nominations) {
         const hasVoted = votesMap.hasOwnProperty(nomination.name);
-        const votedFor = votesMap[nomination.name]; // За кого голосовали
+        const votedFor = votesMap[nomination.name];
 
         let nominationHTML = `
             <div class="nomination ${hasVoted ? 'nomination--voted' : ''}">
