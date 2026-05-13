@@ -96,24 +96,27 @@ const nominations = [
             'meok🎱',
             'heroka👩‍❤️‍💋‍👩',
             'Paleray✨',
-            'Sigmashishka🐢',
             'SANDY👻',
             'ougiiuu🌿',
             'Юмено Сайкуру👀',
-            'KENZI IDK🎨',
             'Бутерброд майнкрафтович🥪',
             'lienn🦋',
-            'Мерша梅尔莎🚯',
+            'МершаМерша🚯',
             'Ладно 0+🧟‍♂️',
-            'Бездна Хел⭐',
-            'овийо!!🪡',
             'Мусорный бак⁴²🦎',
             'Naodd💕',
             'kairu.🖌️',
             'yuutamashi🐢',
             'hOrlOk🫀',
             'houki🦊',
-            'BERFY🦶'
+            'ouranou🗯️',
+            'netochka👽',
+            'асмогелька нежно🐾',
+            'пустой.сигнал🧊',
+            'Фабу🃏',
+            'доримээ🦈',
+            'Ляксанда🎸',
+            'Redikili🎨'
         ]
     },
     {
@@ -141,7 +144,7 @@ const nominations = [
             'влада🦘',
             'glookipail🥄',
             'Крис Мастика🧌',
-            'Ксенонон👽',
+            'Ksenon👽',
             'псветвт🫧',
             'японка вич💀',
             'Максим Гельмо🐱',
@@ -185,7 +188,7 @@ async function generateNominations() {
         if (nomination.users.length > 0) {
             for (let nominationUser of nomination.users) {
                 const isSelected = hasVoted && nominationUser === votedFor;
-                
+
                 nominationHTML += `
                     <div class="nomination__user 
                         ${hasVoted ? 'nomination__user--disabled' : ''} 
@@ -210,7 +213,7 @@ async function generateNominations() {
     }
 
     document.querySelectorAll('.nomination__user:not(.nomination__user--disabled)').forEach(user => {
-        user.addEventListener('click', async function() {
+        user.addEventListener('click', async function () {
             const nominee = this.textContent;
             const nomination = this.closest('.nomination');
             const nominationName = nomination.querySelector('.nomination__name').textContent;
@@ -224,7 +227,7 @@ async function generateNominations() {
 
                 if (response.ok) {
                     nomination.classList.add('nomination--voted');
-                    
+
                     nomination.querySelectorAll('.nomination__user').forEach(u => {
                         u.classList.add('nomination__user--disabled');
                         u.style.pointerEvents = 'none';
