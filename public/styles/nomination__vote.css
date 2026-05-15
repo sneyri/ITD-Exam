@@ -4,6 +4,10 @@
     box-sizing: border-box;
 }
 
+a {
+    text-decoration: none;
+}
+
 :root {
     --index: calc(1vw + 1vh);
     --transition: 0.8s cubic-bezier(0.2, 0.9, 0.4, 1.1);
