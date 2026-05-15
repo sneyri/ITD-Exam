@@ -161,7 +161,7 @@ const nominations = [
             'glookipail🥄',
             'RAVE by BUSTER🎮',
             'Ksenon👽',
-            'псветвт🫧',
+            'pswet🫧',
             'японка вич💀',
             'Максим Гельмо🐱',
             'алиса виалиска🧃',
