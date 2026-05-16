@@ -298,7 +298,7 @@
                     }
                 };
             } else {
-                document.getElementById('verification-error').innerHTML = data.message || 'Слишком много запросов, попробуйте черз 5 минут';
+                document.getElementById('verification-error').innerHTML = data.message || 'Слишком много запросов, попробуйте через 5 минут';
                 checkButton.disabled = false;
                 checkButton.textContent = 'Я опубликовал(а) пост';
             }
