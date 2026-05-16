@@ -32,7 +32,7 @@ app.disable('x-powered-by');
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 30,
     message: { error: 'Слишком много попыток входа. Подождите 15 минут.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -40,7 +40,7 @@ const loginLimiter = rateLimit({
 
 const checkLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    max: 6,
+    max: 30,
     message: { error: 'Слишком частые запросы. Подождите минуту.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -48,7 +48,7 @@ const checkLimiter = rateLimit({
 
 const codeGenLimiter = rateLimit({
     windowMs: 10 * 60 * 1000,
-    max: 3,
+    max: 30,
     message: { error: 'Слишком много кодов. Подождите 10 минут.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -56,15 +56,15 @@ const codeGenLimiter = rateLimit({
 
 const verifyLimiter = rateLimit({
     windowMs: 5 * 60 * 1000,
-    max: 15,
+    max: 50,
     message: { error: 'Слишком много проверок. Подождите 5 минут.' },
     standardHeaders: true,
     legacyHeaders: false,
 });
 
 const registerLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000,
-    max: 3,
+    windowMs: 5 * 60 * 1000,
+    max: 30,
     message: { error: 'Слишком много регистраций. Попробуйте позже.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -72,7 +72,7 @@ const registerLimiter = rateLimit({
 
 const apiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    max: 60,
+    max: 120,
     message: { error: 'Слишком много запросов. Подождите минуту.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -80,7 +80,7 @@ const apiLimiter = rateLimit({
 
 const submitExamLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
-    max: 5,
+    max: 20,
     message: { error: 'Слишком много отправок. Подождите час.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -88,7 +88,7 @@ const submitExamLimiter = rateLimit({
 
 const nominationVoteLimiter = rateLimit({
     windowMs: 60 * 1000,
-    max: 15,
+    max: 60,
     message: { error: 'Слишком много голосов. Подождите минуту.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -96,7 +96,7 @@ const nominationVoteLimiter = rateLimit({
 
 const checkUserLimiter = rateLimit({
     windowMs: 1 * 60 * 1000,
-    max: 10,
+    max: 30,
     message: { error: 'Слишком частые запросы. Подождите минуту.' },
     standardHeaders: true,
     legacyHeaders: false,
